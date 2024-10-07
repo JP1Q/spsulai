@@ -1,7 +1,7 @@
 
 # SPSUL AI
 
-A web-based interface for interacting with the Llama2 Uncensored API, built using [Dash](https://plotly.com/dash/) and [Dash Bootstrap Components](https://dash-bootstrap-components.opensource.faculty.ai/). This app allows users to send prompts and receive responses from a language model in real-time, with a sleek, responsive UI.
+Built using [Dash](https://plotly.com/dash/) and [Dash Bootstrap Components](https://dash-bootstrap-components.opensource.faculty.ai/). This app allows users to send prompts and receive responses from a language model in real-time, with a sleek, responsive UI.
 
 ## Table of Contents
 - [Features](#features)
