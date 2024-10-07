@@ -8,10 +8,7 @@ Built using [Dash](https://plotly.com/dash/) and [Dash Bootstrap Components](htt
 - [Installation](#installation)
 - [Usage](#usage)
 - [Dependencies](#dependencies)
-- [Configuration](#configuration)
-- [Troubleshooting](#troubleshooting)
 - [Contributors](#contributors)
-- [License](#license)
 
 ## Features
 - **User-friendly Interface**: A simple, clean interface with message bubbles for both user and AI responses.
