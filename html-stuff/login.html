@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Page</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome for icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body id="main-content">
+  <div class="background-container">
+    <div class="outer-form">
+      <div class="login-form">
+        <span class="version">ver 0.0.1</span>
+        <i class="fas fa-user user-icon"></i> <!-- User Icon -->
+        <h2 class="mb-4">spsul ai</h2>
+        <form id="loginForm">
+          <div class="mb-3">
+            <label for="username" class="form-label">uživatelské jméno</label>
+            <input type="text" class="form-control" id="username" placeholder="(Jako to od bakalářů)" required>
+          </div>
+          <div class="mb-3">
+            <label for="password" class="form-label">Heslo</label>
+            <input type="password" class="form-control" id="password" placeholder="(Jako to od bakalářů)" required>
+          </div>
+          <button type="submit" class="btn btn-login w-100 c-btn">
+            přihlásit <i class="fas fa-user"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Include the login.js script -->
+  <script src="scripts/login.js"></script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  dash_chat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - DASH_CHAT_PORT=8050
+      - DB_HOST=mariadb  # This refers to the MariaDB service in Docker
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=example  # Adjust if using a different password
+      - DB_NAME=mydatabase
+    ports:
+      - "8050:8050"
+    command: python /app/chat-test.py --port=8050
+    depends_on:
+      - mariadb
+
+  dash_main:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - DASH_MAIN_PORT=8051
+      - DB_HOST=mariadb
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=example
+      - DB_NAME=mydatabase
+    ports:
+      - "8051:8051"
+    command: python /app/main.py --port=8051
+    depends_on:
+      - mariadb
+
+  mariadb:
+    image: mariadb:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: root 
+      MYSQL_DATABASE: school_db                
+      MYSQL_USER: aroteo                   
+      MYSQL_PASSWORD: aroteo   
+
+    volumes:
+      - ./mariadb_funny/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    ports:
+      - "3306:3306"

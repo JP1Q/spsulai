@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teacher Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+
+  
+</head>
+<body id="main-content">
+  <div class="container-fluid">
+    <div class="row">
+     <!-- Left Column -->
+     <div class="col-2 column-left">
+      <div class="card">
+        <!-- User Info -->
+        <div class="user-info">
+          <i class="fas fa-user-circle"></i>
+          <div>
+            <div id="user-name">Jméno</div>
+            <div id="user-email">prijmeni@zak.spsul.cz</div>
+          </div>
+        </div>
+        <!-- Options -->
+        <div class="option" id="logout">
+          <span>Odhlásit</span>
+          <i class="fas fa-sign-out-alt"></i>
+        </div>
+        <div class="option" id="api-key">
+          <span>API klíč</span>
+          <i class="fas fa-key"></i>
+        </div>
+        <div class="option settings" onclick="toggleSettingsColor(this)">
+          <span>Nastavení</span>
+          <i class="fas fa-cog"></i>
+        </div>
+        <div class="option" id="info">
+          <span>O projektu</span>
+          <i class="fas fa-info-circle"></i>
+        </div>
+        <div class="option" id="backtochat">
+          <span>Zpátky do chatu</span>
+          <i class="fas fa-chalkboard-teacher"></i>
+        </div>
+      </div>
+      <div class="cat-icon">
+        <i class="fas fa-cat"></i>
+      </div>
+    </div>
+
+      <!-- Right Column -->
+      <div class="col-10 column-right">
+        <div class="dashboard-container">
+          <select class="class-selector">
+            <option>1ITA</option>
+            <option selected>2ITA</option>
+            <option>3ITA</option>
+            <option>4ITA</option>
+          </select>
+          
+          <input type="text" class="search-bar" placeholder="Search users...">
+          
+          <div class="stats-container">
+            <div class="stat-card">
+              <h3>Active Users</h3>
+              <div class="stat-number">69</div>
+            </div>
+            <div class="stat-card">
+              <h3>Total Messages</h3>
+              <div class="stat-number">1,234</div>
+            </div>
+          </div>
+
+          <div class="user-list">
+            <h3>Active Users</h3>
+            <div class="user-item">
+              <span>Alena Nováková</span>
+              <button class="remove-btn">Remove Access</button>
+            </div>
+            <div class="user-item">
+              <span>Pepa Karlík</span>
+              <button class="remove-btn">Remove Access</button>
+            </div>
+            <div class="user-item">
+              <span>Štefan Ondrů</span>
+              <button class="remove-btn">Remove Access</button>
+            </div>
+            <div class="user-item">
+              <span>Jan Krytý</span>
+              <button class="remove-btn">Remove Access</button>
+            </div>
+            <div class="user-item">
+              <span>Víťa Mastný</span>
+              <button class="remove-btn">Remove Access</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Add any JavaScript functionality here
+    document.querySelectorAll('.remove-btn').forEach(button => {
+      button.addEventListener('click', function() {
+        const userItem = this.parentElement;
+        userItem.style.opacity = '0.5';
+        this.textContent = 'Removed';
+        this.disabled = true;
+      });
+    });
+
+    document.querySelector('.search-bar').addEventListener('input', function(e) {
+      const searchTerm = e.target.value.toLowerCase();
+      document.querySelectorAll('.user-item').forEach(item => {
+        const userName = item.querySelector('span').textContent.toLowerCase();
+        item.style.display = userName.includes(searchTerm) ? 'flex' : 'none';
+      });
+    });
+  </script>
+  <script src="scripts/chat.js"></script>
+</body>
+</html>
