@@ -1,77 +1,85 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-import httpx
-from fastapi.middleware.cors import CORSMiddleware
+import os
 import json
+from fastapi import FastAPI, HTTPException, Response
+from fastapi.middleware.cors import CORSMiddleware
+import requests
+from typing import Dict, Any
+from fastapi.responses import StreamingResponse
+import asyncio
 
-# Create the FastAPI app
 app = FastAPI()
 
-# Allow CORS from all origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins; you can specify allowed origins here
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],  # Allows all methods (GET, POST, etc.)
-    allow_headers=["*"],  # Allows all headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-# Define a model for the request body
-class OllamaRequest(BaseModel):
-    model: str
-    prompt: str
-
-# Define the Ollama API endpoint
-OLLAMA_URL = "http://localhost:11434/api/generate"
-
 @app.post("/generate_response")
-async def generate_response(ollama_request: OllamaRequest):
+def generate_response(request: Dict[str, Any]):
     """
-    Endpoint for conversation with AI
+    Endpoint to generate a streaming response from the Ollama API.
     """
-    body = {
-        "model": ollama_request.model,
-        "prompt": ollama_request.prompt
+    if not request.get('prompt'):
+        raise HTTPException(status_code=400, detail="Prompt is required")
+
+    url = "http://host.docker.internal:11434/api/generate"
+    
+    payload = {
+        "model": request.get('model'),
+        "prompt": request.get('prompt'),
+        "stream": True
     }
 
-    complete_response = ""
-    token_details = []
-    total_tokens = 0
-    eval_duration = 0
-    tokens_per_second = 0
+    def generate():
+        with requests.post(url, json=payload, stream=True) as response:
+            if response.status_code != 200:
+                yield f"Error: Received status code {response.status_code}\n"
+                return
+                
+            for line in response.iter_lines():
+                if line:
+                    try:
+                        data = json.loads(line)
+                        if "response" in data:
+                            yield data["response"]
+                    except json.JSONDecodeError:
+                        continue
+                    except Exception as e:
+                        yield f"Error: {str(e)}\n"
+                        return
 
-    # Use httpx to send an asynchronous POST request to the Ollama API
+    return StreamingResponse(
+        generate(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+        }
+    )
+
+# Optional endpoint to list available models
+@app.get("/models")
+async def list_models():
+    """
+    Endpoint to list available Ollama models.
+    """
+    url = "http://localhost:11434/api/tags"
+    
     async with httpx.AsyncClient() as client:
         try:
-            response = await client.post(OLLAMA_URL, json=body, timeout=None)
-
+            response = await client.get(url)
             if response.status_code == 200:
-                # Check if response is NDJSON
-                if response.headers.get('Content-Type') == 'application/x-ndjson':
-                    async for line in response.aiter_lines():
-                        if line:
-                            json_line = json.loads(line)
-                            current_token = json_line.get("response", "")
-                            complete_response += current_token
-
-                            # Store token details
-                            token_details.append(current_token)
-
-                            # Update token statistics
-                            if json_line.get("done", False):
-                                total_tokens = json_line.get("prompt_eval_count", 0)
-                                eval_duration = json_line.get("eval_duration", 1)
-                                tokens_per_second = total_tokens / (eval_duration / 1e9)
-
-                    # Prepare final output after completion
-                    return {
-                        "response": ''.join(token_details),
-                        "total_tokens": total_tokens,
-                        "tokens_per_second": f"{tokens_per_second:.2f}"
-                    }
-                else:
-                    raise HTTPException(status_code=500, detail=f"Unexpected content type: {response.headers.get('Content-Type')}")
+                return response.json()
             else:
-                raise HTTPException(status_code=response.status_code, detail="Ollama API request failed")
-        except httpx.RequestError as e:
-            raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+                raise HTTPException(
+                    status_code=response.status_code,
+                    detail="Failed to fetch models"
+                )
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Error fetching models: {str(e)}"
+            )
