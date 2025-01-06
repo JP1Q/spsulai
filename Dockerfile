@@ -1,20 +1,27 @@
-# Použijeme oficiální Python image jako základ
+# Use the official Python image as a base
 FROM python:3.9-slim
 
-# Nastavíme pracovní adresář v kontejneru
+# Set the working directory
 WORKDIR /app
 
-# Zkopírujeme requirements a nainstalujeme závislosti
+# Install dependencies
 COPY requirements.txt /app/
-RUN echo "Instalujeme závislosti z requirements.txt"
-RUN pip install -r requirements.txt
-RUN echo "Závislosti nainstalovány"
+RUN pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir uvicorn
 
-# Zkopírujeme skripty do /app
-RUN echo "Kopírujeme skripty do pracovního adresáře"
+# Copy Python application files
 COPY python_stuff/ /app/
 
-# Spustíme obě Dash aplikace na různých portech
-RUN echo "Spouštíme aplikace na různých portech"
-CMD python chat-test.py --port=$DASH_CHAT_PORT & \
-    python main.py --port=$DASH_MAIN_PORT
+# Install Supervisor
+RUN apt-get update && apt-get install -y --no-install-recommends supervisor && \
+    rm -rf /var/lib/apt/lists/*
+
+
+EXPOSE 8052
+EXPOSE 8053
+
+# Copy Supervisor configuration
+COPY supervisord.conf /etc/supervisor/supervisord.conf
+
+# Run Supervisor to manage the processes
+CMD ["supervisord", "-c", "/etc/supervisor/supervisord.conf"]

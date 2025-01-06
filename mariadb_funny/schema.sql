@@ -39,7 +39,7 @@ CREATE TABLE studenti (
     id_student INT PRIMARY KEY AUTO_INCREMENT,
     trida INT,
     email VARCHAR(255) NOT NULL,
-    heslo VARCHAR(255) NOT NULL,
+    heslo VARCHAR(255) NOT NULL, -- this is password its very secured
     api_klic INT,
     aktivni BOOLEAN,
     FOREIGN KEY (trida) REFERENCES trida(id_tridy),
