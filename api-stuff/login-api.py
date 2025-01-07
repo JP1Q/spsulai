@@ -14,7 +14,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
+#  voe poresit active dir <333
 # Pydantic model for login requests
 class LoginRequest(BaseModel):
     username: str

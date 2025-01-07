@@ -6,6 +6,7 @@ import requests
 from typing import Dict, Any
 from fastapi.responses import StreamingResponse
 import asyncio
+import httpx
 
 app = FastAPI()
 
@@ -66,7 +67,7 @@ async def list_models():
     """
     Endpoint to list available Ollama models.
     """
-    url = "http://localhost:11434/api/tags"
+    url = "http://host.docker.internal:11434/api/tags"
     
     async with httpx.AsyncClient() as client:
         try:

@@ -28,7 +28,7 @@ async function sendMessage() {
       },
       body: JSON.stringify({
         prompt: userMessage,
-        model: "llama2-uncensored"  // Fixed model selection
+        model: "tinyllama"  // Fixed model selection
       }),
     });
 
