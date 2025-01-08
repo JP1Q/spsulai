@@ -1,57 +1,61 @@
-    // Get the form element
-    const loginForm = document.getElementById('loginForm');
+// Get the form element
+const loginForm = document.getElementById('loginForm');
 
-    // Add event listener for form submission
-    loginForm.addEventListener('submit', async (event) => {
-      event.preventDefault(); // Prevent the form from refreshing the page
+// Function to get the server IP and port
+async function getServerAddress() {
+    // First try window.location to get the current server address
+    const currentHost = window.location.hostname;
+    const currentPort = "8053"; // Your backend port
 
-      // Get the form data
-      const username = document.getElementById('username').value;
-      const password = document.getElementById('password').value;
+    if (currentHost !== 'localhost' && currentHost !== '127.0.0.1') {
+        return `http://${currentHost}:${currentPort}`;
+    }
 
-      // Create the request body
-      const body = {
+    // Fallback to checking multiple local IPs
+    const possibleIPs = [
+        'localhost',
+        window.location.hostname,
+        location.host.split(':')[0]
+    ];
+
+    // Return the first working IP
+    const serverUrl = `http://${possibleIPs[0]}:${currentPort}`;
+    return serverUrl;
+}
+
+// Modified login handler
+loginForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+
+    const body = {
         username: username,
         password: password
-      };
+    };
 
-      try {
-        const response = await fetch('http://localhost:8053/verify_user', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(body) // Send as JSON
+    try {
+        // Get the server address dynamically
+        const serverUrl = await getServerAddress();
+        const response = await fetch(`${serverUrl}/verify_user`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
         });
 
         if (response.ok) {
-          const data = await response.json();
-
-          // Store access token and username in localStorage
-          localStorage.setItem('access_token', data.access_token);
-          localStorage.setItem('username', username);
-
-          // Redirect to chat.html
-          window.location.href = 'chat.html';
+            const data = await response.json();
+            localStorage.setItem('access_token', data.access_token);
+            localStorage.setItem('username', username);
+            window.location.href = 'chat.html';
         } else {
-          alert('Login failed: ' + response.statusText);
+            alert('Login failed: ' + response.statusText);
         }
-      } catch (error) {
+    } catch (error) {
         console.error('Error:', error);
         alert('An error occurred. Please try again.');
-      }
-    });
-
-
-
-    document.addEventListener("DOMContentLoaded", () => {
-      const preloader = document.getElementById("preloader");
-      const mainContent = document.getElementById("main-content");
-    
-      // Wait for the fade-out animation to complete
-      preloader.addEventListener("animationend", () => {
-        preloader.style.display = "none";
-        mainContent.style.display = "block";
-      });
-    });
-    
+    }
+});
