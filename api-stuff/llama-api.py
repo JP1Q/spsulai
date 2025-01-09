@@ -10,6 +10,7 @@ import httpx
 
 app = FastAPI()
 
+# Enable CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -27,7 +28,7 @@ def generate_response(request: Dict[str, Any]):
         raise HTTPException(status_code=400, detail="Prompt is required")
 
     url = "http://host.docker.internal:11434/api/generate"
-    
+
     payload = {
         "model": request.get('model'),
         "prompt": request.get('prompt'),
@@ -39,36 +40,37 @@ def generate_response(request: Dict[str, Any]):
             if response.status_code != 200:
                 yield f"Error: Received status code {response.status_code}\n"
                 return
-                
+
             for line in response.iter_lines():
                 if line:
                     try:
-                        data = json.loads(line)
+                        # Decode and process each line
+                        data = json.loads(line.decode("utf-8"))
                         if "response" in data:
-                            yield data["response"]
-                    except json.JSONDecodeError:
-                        continue
+                            yield data["response"] + "\n"
+                    except json.JSONDecodeError as e:
+                        yield f"JSON Decode Error: {str(e)}\n"
                     except Exception as e:
-                        yield f"Error: {str(e)}\n"
-                        return
+                        yield f"Unexpected Error: {str(e)}\n"
 
     return StreamingResponse(
         generate(),
         media_type="text/event-stream",
         headers={
-            "Cache-Control": "no-cache",
+            "Cache-Control": "no-store",
             "Connection": "keep-alive",
+            "Content-Type": "text/event-stream",
+            "X-Accel-Buffering": "no",  # Disables buffering in reverse proxies
         }
     )
 
-# Optional endpoint to list available models
 @app.get("/models")
 async def list_models():
     """
     Endpoint to list available Ollama models.
     """
     url = "http://host.docker.internal:11434/api/tags"
-    
+
     async with httpx.AsyncClient() as client:
         try:
             response = await client.get(url)
@@ -77,10 +79,15 @@ async def list_models():
             else:
                 raise HTTPException(
                     status_code=response.status_code,
-                    detail="Failed to fetch models"
+                    detail=f"Failed to fetch models: {response.text}"
                 )
+        except httpx.RequestError as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Request error occurred: {str(e)}"
+            )
         except Exception as e:
             raise HTTPException(
                 status_code=500,
-                detail=f"Error fetching models: {str(e)}"
+                detail=f"Unexpected error occurred: {str(e)}"
             )

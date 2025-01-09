@@ -43,7 +43,7 @@ async function sendMessage() {
             },
             body: JSON.stringify({
                 prompt: userMessage,
-                model: "llama3-nogpu:latest"
+                model: "gf"
             }),
         });
 
@@ -74,31 +74,31 @@ async function sendMessage() {
     }
 }
 
-// // Add debug information (can be removed in production)
-// function showConnectionInfo() {
-//     const debugInfo = document.createElement('div');
-//     debugInfo.style.position = 'fixed';
-//     debugInfo.style.bottom = '10px';
-//     debugInfo.style.left = '10px';
-//     debugInfo.style.backgroundColor = 'rgba(0,0,0,0.7)';
-//     debugInfo.style.color = 'white';
-//     debugInfo.style.padding = '10px';
-//     debugInfo.style.borderRadius = '5px';
-//     debugInfo.style.fontSize = '12px';
+// Add debug information (can be removed in production)
+function showConnectionInfo() {
+    const debugInfo = document.createElement('div');
+    debugInfo.style.position = 'fixed';
+    debugInfo.style.bottom = '10px';
+    debugInfo.style.left = '10px';
+    debugInfo.style.backgroundColor = 'rgba(0,0,0,0.7)';
+    debugInfo.style.color = 'white';
+    debugInfo.style.padding = '10px';
+    debugInfo.style.borderRadius = '5px';
+    debugInfo.style.fontSize = '12px';
     
-//     const updateInfo = async () => {
-//         const serverUrl = await getServerAddress();
-//         debugInfo.innerHTML = `
-//             Current URL: ${window.location.href}<br>
-//             Server URL: ${serverUrl}<br>
-//             Hostname: ${window.location.hostname}<br>
-//             Port: 8052
-//         `;
-//     };
+    const updateInfo = async () => {
+        const serverUrl = await getServerAddress();
+        debugInfo.innerHTML = `
+            Current URL: ${window.location.href}<br>
+            Server URL: ${serverUrl}<br>
+            Hostname: ${window.location.hostname}<br>
+            Port: 8052
+        `;
+    };
     
-//     updateInfo();
-//     document.body.appendChild(debugInfo);
-// }
+    updateInfo();
+    document.body.appendChild(debugInfo);
+}
 
 // Rest of your existing functions remain the same
 function addChatBubble(sender, content) {
