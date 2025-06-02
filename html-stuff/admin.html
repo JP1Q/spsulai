@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css"><!-- Keeping same style as original -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/styles/monokai.min.css">
+</head>
+<body id="main-content">
+  <div class="container-fluid">
+    <div class="row">
+      <!-- Left Column: Sidebar -->
+      <div class="col-12 col-md-2 column-left">
+        <div class="card mb-3">
+          <!-- Admin Info -->
+          <div class="user-info p-3">
+            <i class="fas fa-user-shield fa-2x"></i>
+            <div class="ms-2">
+              <div id="admin-name">Admin</div>
+              <div id="admin-email">admin@example.com</div>
+            </div>
+          </div>
+          <!-- Navigation Options -->
+          <div class="option p-2">
+            <span><i class="fas fa-tachometer-alt"></i> Dashboard</span>
+          </div>
+          <div class="option p-2" id="logout">
+            <span><i class="fas fa-sign-out-alt"></i> Odhlásit</span>
+          </div>
+        </div>
+        <div class="cat-icon text-center">
+          <i class="fas fa-cat fa-2x"></i>
+        </div>
+      </div>
+
+      <!-- Right Column: Dashboard Content -->
+      <div class="col-12 col-md-10 column-right">
+        <div class="dashboard-container p-4" id="dashboard-container">
+          <h1 class="mb-4">Admin Dashboard</h1>
+
+          <!-- Panel 1: Check Llama AI Version -->
+          <div class="card mb-4">
+            <div class="card-header">
+              <i class="fas fa-robot"></i> Zkontrolování verze Llama AI
+            </div>
+            <div class="card-body">
+              <p>Zkontrolujte, zda vyšla nová verze Llama AI.</p>
+              <button class="btn btn-primary" id="check-llama-version">
+                <i class="fas fa-sync"></i> Zkontrolovat verzi
+              </button>
+              <div id="llama-version-status" class="mt-3"></div>
+            </div>
+          </div>
+
+          <!-- Panel 2: Update AI -->
+          <div class="card mb-4">
+            <div class="card-header">
+              <i class="fas fa-download"></i> Update AI
+            </div>
+            <div class="card-body">
+              <p>Aktualizujte AI pomocí tlačítka níže.</p>
+              <button class="btn btn-warning" id="update-ai">
+                <i class="fas fa-arrow-up"></i> Update AI
+              </button>
+              <div id="update-status" class="mt-3"></div>
+            </div>
+          </div>
+
+          <!-- Panel 3: Server Status -->
+          <div class="card mb-4">
+            <div class="card-header">
+              <i class="fas fa-server"></i> Stav serveru
+            </div>
+            <div class="card-body">
+              <p>Monitorování využití serveru:</p>
+              <ul>
+                <li>RAM Usage: <span id="ram-usage">Načítání...</span></li>
+                <li>CPU Usage: <span id="cpu-usage">Načítání...</span></li>
+                <li>Připojeni uživatelé: <span id="active-users">Načítání...</span></li>
+              </ul>
+              <button class="btn btn-info" id="refresh-status">
+                <i class="fas fa-sync-alt"></i> Obnovit data
+              </button>
+            </div>
+          </div>
+
+          <div class="card mb-4">
+            <div class="card-header">
+              <i class="fas fa-star"></i> Průměrné hodnocení uživatelů
+            </div>
+            <div class="card-body">
+              <h5 id="average-rating">Načítání...</h5>
+            </div>
+          </div>
+
+
+          
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JS Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.3/dist/purify.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/highlight.min.js"></script>
+  <script>
+    // Function to fetch Llama AI version
+    document.getElementById('check-llama-version').addEventListener('click', function() {
+      document.getElementById('llama-version-status').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Kontrola probíhá...';
+      fetch('http://localhost:8053/check_llama_version')
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('llama-version-status').innerHTML = data.message;
+        })
+        .catch(error => {
+          document.getElementById('llama-version-status').innerHTML = 'Chyba při kontrole verze.';
+        });
+    });
+  
+    // Function to update AI
+    document.getElementById('update-ai').addEventListener('click', function() {
+      document.getElementById('update-status').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Aktualizace probíhá...';
+      fetch('http://localhost:8053/update_ai', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('update-status').innerHTML = data.message;
+        })
+        .catch(error => {
+          document.getElementById('update-status').innerHTML = 'Chyba při aktualizaci AI.';
+        });
+    });
+  
+    // Function to fetch and update server status
+async function updateServerStatus() {
+  try {
+    const response = await fetch('http://localhost:8053/server_status');
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    const data = await response.json();
+    document.getElementById('ram-usage').textContent = data.ram_usage;
+    document.getElementById('cpu-usage').textContent = data.cpu_usage;
+    document.getElementById('active-users').textContent = data.active_users;
+  } catch (error) {
+    console.error('Error fetching server status:', error);
+  }
+}
+
+// Initial fetch of server status
+updateServerStatus();
+
+// Set up periodic refresh every 5 seconds
+setInterval(updateServerStatus, 500);
+
+// Refresh button event listener
+document.getElementById('refresh-status').addEventListener('click', updateServerStatus);
+
+async function fetchAverageRating() {
+  const apiUrl = 'http://' + window.location.hostname + ':8053';
+  const token  = localStorage.getItem('access_token');
+
+  const res = await fetch(`${apiUrl}/user/rating_get`, {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+
+  if (!res.ok) {
+    document.getElementById('average-rating').textContent = 'Chyba';
+    return;
+  }
+
+  const data = await res.json();
+  document.getElementById('average-rating').textContent =
+    data.multiplied !== null ? `${data.multiplied} ⭐` : 'Zatím žádná hodnocení';
+}
+  fetchAverageRating();
+
+
+  </script>
+  
+</body>
+</html>

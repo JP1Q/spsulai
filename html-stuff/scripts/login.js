@@ -1,51 +1,48 @@
 // Get the form element
 const loginForm = document.getElementById('loginForm');
 
-// Function to get the server IP and port
+// Function to get the server IP and port dynamically
 async function getServerAddress() {
-    // First try window.location to get the current server address
     const currentHost = window.location.hostname;
-    const currentPort = "8053"; // Your backend port
-
+    const currentPort = "8053";
+    
     if (currentHost !== 'localhost' && currentHost !== '127.0.0.1') {
         return `http://${currentHost}:${currentPort}`;
     }
-
-    // Fallback to checking multiple local IPs
+    
     const possibleIPs = [
         'localhost',
         window.location.hostname,
         location.host.split(':')[0]
     ];
-
-    // Return the first working IP
-    const serverUrl = `http://${possibleIPs[0]}:${currentPort}`;
-    return serverUrl;
+    return `http://${possibleIPs[0]}:${currentPort}`;
 }
 
-// Modified login handler
+// Login handler
 loginForm.addEventListener('submit', async (event) => {
     event.preventDefault();
-
+    
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
 
-    const body = {
-        username: username,
-        password: password
-    };
+    const body = { username, password };
 
     try {
-        // Get the server address dynamically
         const serverUrl = await getServerAddress();
-        const response = await fetch(`${serverUrl}/verify_user`, {
+        const response = await fetch(`${serverUrl}/login`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body)
         });
-
+        
+        if (response.status === 403) {
+            const data = await response.json();
+            if (data.detail === "Waiting for admin approval") {
+                showApprovalPending();
+                return;
+            }
+        }
+        
         if (response.ok) {
             const data = await response.json();
             localStorage.setItem('access_token', data.access_token);
@@ -59,3 +56,40 @@ loginForm.addEventListener('submit', async (event) => {
         alert('An error occurred. Please try again.');
     }
 });
+
+// Admin: Manage classroom
+async function manageClassroom(classroom, status) {
+    const serverUrl = await getServerAddress();
+    const response = await fetch(`${serverUrl}/manage-classroom`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        },
+        body: JSON.stringify({ classroom, status })
+    });
+    
+    if (!response.ok) {
+        alert('Failed to update classroom status');
+    }
+}
+
+// Fetch students in a class
+async function fetchClassStudents(classroom) {
+    const serverUrl = await getServerAddress();
+    const response = await fetch(`${serverUrl}/class-students/${classroom}`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` }
+    });
+    
+    if (!response.ok) {
+        alert('Failed to fetch students');
+        return [];
+    }
+    
+    return await response.json();
+}
+
+// Display admin approval pending notice
+function showApprovalPending() {
+    alert('Your account is awaiting admin approval.');
+}

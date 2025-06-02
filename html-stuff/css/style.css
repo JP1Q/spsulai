@@ -367,3 +367,80 @@ body {
 p {
   color: black;
 }
+/* Add custom styles to the code blocks */
+pre code {
+  display: block;
+  padding: 1em;
+  background: #2d2d2d; 
+  color: #f8f8f2;      
+  border-radius: 4px;
+  overflow-x: auto;
+  font-family: 'Courier New', monospace;
+  line-height: 1.5;
+  border: 1px solid #444; /* Subtle border */
+}
+
+/* For code block wrappers, add a little more space and button customization */
+.code-block-wrapper {
+  position: relative;
+  margin: 10px 0;
+  padding: 10px;
+  /* background: #1e1e1e; */
+  border-radius: 8px;
+}
+
+/* Customize the copy button */
+.copy-code-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 5px 10px;
+  background-color: #008cba;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.copy-code-button:hover {
+  background-color: #005f6b;
+}
+
+.copy-code-button:active {
+  background-color: #004b5a;
+}
+
+.copy-code-button:focus {
+  outline: none;
+}
+
+.rating-popup {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.9);
+  color: #fff;
+  border: 1px solid #fff;
+  border-radius: 10px;
+  padding: 16px;
+  display: none;
+  z-index: 1000;
+  text-align: center;
+}
+.rating-popup .title {
+  margin-bottom: 8px;
+}
+.rating-popup .emoticons {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+.rating-popup .emoticon {
+  font-size: 24px;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+.rating-popup .emoticon:hover {
+  transform: scale(1.2);
+}

@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Dokumentace</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/styles/monokai.min.css">
+  <style>
+    /* Přidané CSS styly pro lepší zobrazení */
+    .endpoint-card {
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      margin-bottom: 15px;
+    }
+    .endpoint-header {
+      padding: 12px 15px;
+      background-color: #f8f9fa;
+      cursor: pointer;
+      border-radius: 5px 5px 0 0;
+    }
+    .endpoint-content {
+      padding: 15px;
+      display: none;
+    }
+    .code-tabs {
+      margin-bottom: 10px;
+    }
+    .code-tabs button {
+      background: #eee;
+      border: 1px solid #ccc;
+      padding: 5px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .code-tabs button.active {
+      background: #007bff;
+      color: white;
+      border-color: #007bff;
+    }
+    .api-key-container {
+      position: relative;
+    }
+    .toggle-visibility {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+    }
+    .rate-limit-info {
+      background-color: #f8f9fa;
+      border-left: 4px solid #ffc107;
+      padding: 10px 15px;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .tooltip-icon {
+      cursor: help;
+      color: #6c757d;
+    }
+    .tooltip-text {
+      visibility: hidden;
+      width: 250px;
+      background-color: #555;
+      color: #fff;
+      text-align: center;
+      border-radius: 6px;
+      padding: 5px;
+      position: absolute;
+      z-index: 1;
+      bottom: 125%;
+      left: 50%;
+      margin-left: -125px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .tooltip-container:hover .tooltip-text {
+      visibility: visible;
+      opacity: 1;
+    }
+  </style>
+</head>
+<body id="main-content">
+  <div class="container-fluid">
+    <div class="row">
+      <!-- Levý postranní panel -->
+      <div class="col-2 column-left">
+        <div class="card">
+          <!-- Informace o uživateli -->
+          <div class="user-info p-3 d-flex align-items-center">
+            <i class="fas fa-user-circle fa-2x"></i>
+            <div class="ms-2">
+              <div id="user-name">Jméno</div>
+              <div id="user-email">prijmeni@zak.spsul.cz</div>
+            </div>
+          </div>
+          <!-- Možnosti -->
+          <div class="option p-2" id="logout">
+            <span><i class="fas fa-sign-out-alt"></i> Odhlásit</span>
+          </div>
+          <div class="option p-2" id="api-key-option">
+            <span><i class="fas fa-key"></i> API klíč</span>
+          </div>
+          <div class="option p-2 settings" onclick="toggleSettingsColor(this)">
+            <span><i class="fas fa-cog"></i> Nastavení</span>
+          </div>
+          <div class="option p-2" id="info">
+            <span><i class="fas fa-info-circle"></i> O projektu</span>
+          </div>
+          <div class="option p-2" id="backtochat">
+            <span><i class="fas fa-chalkboard-teacher"></i> Zpátky do chatu</span>
+          </div>
+        </div>
+        <div class="cat-icon text-center mt-3">
+          <i class="fas fa-cat fa-2x"></i>
+        </div>
+      </div>
+
+      <!-- Hlavní obsah API dokumentace -->
+      <div class="col-10 column-right">
+        <div class="dashboard-container p-3">
+          <h1 class="mb-4">API Dokumentace</h1>
+          
+          <!-- Informace o rate limitech -->
+          <div class="rate-limit-info mb-4">
+            <div class="d-flex align-items-center">
+              <i class="fas fa-exclamation-triangle me-2" style="color: #ffc107;"></i>
+              <span><strong>Omezení počtu požadavků:</strong> 60 za minutu</span>
+              <div class="tooltip-container ms-2">
+                <i class="fas fa-info-circle tooltip-icon"></i>
+                <span class="tooltip-text">Vaše API volání jsou omezena na 60 požadavků za minutu. Překročení tohoto limitu může vést k dočasnému zablokování přístupu.</span>
+              </div>
+            </div>
+          </div>
+      
+          <!-- Sekce API klíče s přepínačem viditelnosti -->
+          <div class="card mb-4">
+            <div class="card-header">
+              <i class="fas fa-key"></i> Váš API klíč
+            </div>
+            <div class="card-body">
+              <div class="api-key-container">
+                <input type="password" id="api-key-display" class="form-control" 
+                       value="Načítání..." readonly style="padding-right: 40px;">
+                <i class="fas fa-eye toggle-visibility" onclick="toggleApiKeyVisibility()"></i>
+              </div>
+              <button class="btn btn-primary mt-3" id="regenerate-api-key">
+                <i class="fas fa-sync"></i> Obnovit API klíč
+              </button>
+            </div>
+          </div>
+      
+          <!-- Dokumentace API endpointů -->
+          <div class="card mb-4">
+            <div class="card-header">
+              <i class="fas fa-list"></i> API Endpointy
+            </div>
+            <div class="card-body">
+              
+              <!-- Generate Response Endpoint -->
+              <div class="endpoint-card">
+                <div class="endpoint-header" onclick="toggleEndpoint(this)">
+                  <span class="badge bg-success">POST</span>
+                  <strong>/generate_response</strong> - Generuje streamovanou odpověď
+                </div>
+                <div class="endpoint-content">
+                  <h5>Parametry</h5>
+                  <ul>
+                    <li><code>model</code> (string, povinné) - Název AI modelu</li>
+                    <li><code>prompt</code> (string, povinné) - Textový dotaz</li>
+                  </ul>
+                  
+                  <h5>Příklad požadavku</h5>
+                  <div class="code-tabs">
+                    <button class="active" onclick="showCodeTab('curl-generate')">cURL</button>
+                    <button onclick="showCodeTab('python-generate')">Python</button>
+                    <button onclick="showCodeTab('js-generate')">JavaScript</button>
+                  </div>
+                  
+                  <div id="curl-generate" class="code-content">
+                    <pre><code class="bash">
+curl -X POST http://localhost:8000/generate_response \
+  -H "X-API-Key: VÁŠ_API_KLÍČ" \
+  -H "Content-Type: application/json" \
+  -d '{"model": "llama2", "prompt": "Napište básničku o koťátku"}'
+                    </code></pre>
+                  </div>
+                  
+                  <div id="python-generate" class="code-content" style="display:none">
+                    <pre><code class="python">
+import requests
+
+url = "http://localhost:8000/generate_response"
+headers = {
+    "X-API-Key": "VÁŠ_API_KLÍČ",
+    "Content-Type": "application/json"
+}
+data = {
+    "model": "llama2",
+    "prompt": "Napište básničku o koťátku"
+}
+
+response = requests.post(url, headers=headers, json=data, stream=True)
+for chunk in response.iter_content():
+    print(chunk.decode(), end='')
+                    </code></pre>
+                  </div>
+                  
+                  <div id="js-generate" class="code-content" style="display:none">
+                    <pre><code class="javascript">
+async function generateResponse() {
+  const url = "http://localhost:8000/generate_response";
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      "X-API-Key": "VÁŠ_API_KLÍČ",
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      model: "llama2",
+      prompt: "Napište básničku o koťátku"
+    })
+  });
+
+  // Zpracování streamu odpovědi
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    console.log(decoder.decode(value));
+  }
+}
+                    </code></pre>
+                  </div>
+                </div>
+              </div>
+          
+              <!-- Models Endpoint -->
+              <div class="endpoint-card">
+                <div class="endpoint-header" onclick="toggleEndpoint(this)">
+                  <span class="badge bg-primary">GET</span>
+                  <strong>/models</strong> - Vrací seznam dostupných modelů
+                </div>
+                <div class="endpoint-content">
+                  <h5>Příklad odpovědi</h5>
+                  <pre><code class="json">
+{
+  "models": [
+    {"name": "llama2", "size": "7B"},
+    {"name": "mistral", "size": "7B"}
+  ]
+}
+                  </code></pre>
+                  
+                  <div class="code-tabs">
+                    <button class="active" onclick="showCodeTab('curl-models')">cURL</button>
+                    <button onclick="showCodeTab('python-models')">Python</button>
+                    <button onclick="showCodeTab('js-models')">JavaScript</button>
+                  </div>
+                  
+                  <div id="curl-models" class="code-content">
+                    <pre><code class="bash">
+curl -X GET http://localhost:8000/models \
+  -H "X-API-Key: VÁŠ_API_KLÍČ"
+                    </code></pre>
+                  </div>
+                  
+                  <div id="python-models" class="code-content" style="display:none">
+                    <pre><code class="python">
+import requests
+
+url = "http://localhost:8000/models"
+headers = {
+    "X-API-Key": "VÁŠ_API_KLÍČ"
+}
+
+response = requests.get(url, headers=headers)
+print(response.json())
+                    </code></pre>
+                  </div>
+                  
+                  <div id="js-models" class="code-content" style="display:none">
+                    <pre><code class="javascript">
+async function getModels() {
+  const response = await fetch("http://localhost:8000/models", {
+    method: 'GET',
+    headers: {
+      "X-API-Key": "VÁŠ_API_KLÍČ"
+    }
+  });
+  
+  if (response.ok) {
+    const data = await response.json();
+    console.log(data);
+    return data;
+  } else {
+    console.error("Chyba při získávání modelů:", response.status);
+  }
+}
+                    </code></pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JS knihovny -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.3/dist/purify.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/highlight.min.js"></script>
+  <script>
+    // Zvýraznění syntaxe kódu
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('pre code').forEach((block) => {
+        hljs.highlightElement(block);
+      });
+      
+      // Rozbalení prvního endpointu při načtení stránky
+      const firstEndpoint = document.querySelector('.endpoint-header');
+      if (firstEndpoint) {
+        toggleEndpoint(firstEndpoint);
+      }
+    });
+
+    // Přepínání viditelnosti API klíče
+    function toggleApiKeyVisibility() {
+      const keyField = document.getElementById('api-key-display');
+      const eyeIcon = document.querySelector('.toggle-visibility');
+      if (keyField.type === 'password') {
+        keyField.type = 'text';
+        eyeIcon.classList.replace('fa-eye', 'fa-eye-slash');
+      } else {
+        keyField.type = 'password';
+        eyeIcon.classList.replace('fa-eye', 'fa-eye');
+      }
+    }
+
+    // Přepínání zobrazení endpointu
+    function toggleEndpoint(header) {
+      const content = header.nextElementSibling;
+      if (content.style.display === 'block') {
+        content.style.display = 'none';
+      } else {
+        content.style.display = 'block';
+      }
+    }
+
+    // Přepínání záložek s kódem
+    function showCodeTab(tabId) {
+      // Skrytí všech záložek v aktuální skupině
+      const tabGroup = event.target.closest('.code-tabs').nextElementSibling.parentElement;
+      const tabs = tabGroup.querySelectorAll('.code-content');
+      tabs.forEach(tab => tab.style.display = 'none');
+      
+      // Zobrazení vybrané záložky
+      document.getElementById(tabId).style.display = 'block';
+      
+      // Aktualizace aktivního tlačítka
+      const buttons = event.target.parentElement.querySelectorAll('button');
+      buttons.forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+    }
+
+    // Kontrola tokenu v konzoli pro debugging
+    console.log(localStorage.getItem('access_token')); 
+
+    // Původní funkce pro získání API klíče uživatele
+    async function fetchUserApiKey() {
+      try {
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+          throw new Error('Autentizační token nenalezen');
+        }
+        
+        // Původní volání API bez režimu credentials
+        const response = await fetch('http://localhost:8053/user/api_key', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Chyba: ${response.status} ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        return data.api_key;
+      } catch (error) {
+        console.error('Chyba:', error);
+        document.getElementById('api-key-display').value = 'Chyba: ' + error.message;
+        return null;
+      }
+    }
+
+    // Funkce pro načtení a zobrazení API klíče
+    async function loadApiKey() {
+      document.getElementById('api-key-display').value = 'Načítání...';
+      const apiKey = await fetchUserApiKey();
+      if (apiKey) {
+        document.getElementById('api-key-display').value = apiKey;
+      } else {
+        document.getElementById('api-key-display').value = 'Chyba načítání API klíče';
+      }
+    }
+
+    // Event listener pro obnovení API klíče (pouze volá původní endpoint znovu)
+    document.getElementById('regenerate-api-key').addEventListener('click', async function() {
+      document.getElementById('api-key-display').value = 'Načítání...';
+      const newApiKey = await fetchUserApiKey();
+      if (newApiKey) {
+        document.getElementById('api-key-display').value = newApiKey;
+        alert('Nový API klíč byl vygenerován!');
+      } else {
+        document.getElementById('api-key-display').value = 'Chyba při získávání API klíče';
+      }
+    });
+
+    // Načtení API klíče při načtení stránky
+    document.addEventListener('DOMContentLoaded', loadApiKey);
+    
+    // Přesměrování na chat
+    document.getElementById('backtochat').addEventListener('click', function() {
+      window.location.href = 'chat.html';
+    });
+
+    // Přesměrování na odhlášení
+    document.getElementById('logout').addEventListener('click', function() {
+      localStorage.removeItem('access_token');
+      window.location.href = 'login.html';
+    });
+
+
+    const username = localStorage.getItem("username");
+    const userEmailElement = document.getElementById("user-email");
+    const userNameElement = document.getElementById("user-name");
+
+    if (username) {
+    const emailDomain = /\d/.test(username) ? "zak.spsul.cz" : "spsul.cz";
+    userEmailElement.textContent = `${username}@${emailDomain}`;
+    userNameElement.textContent = username;
+} else {
+    alert("You need to log in first.");
+    window.location.href = "login.html";
+}
+    
+  </script>
+</body>
+</html>
