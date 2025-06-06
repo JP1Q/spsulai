@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SPSUL AI - Přihlášení</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background-color: #50586C;
+      background-image: radial-gradient(#DCE2F0 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+    input:focus {
+      outline: none !important;
+      box-shadow: none !important;
+      border-color: transparent !important;
+    }
+  </style>
+  <script src="https://unpkg.com/feather-icons"></script>
+</head>
+<body class="min-h-screen flex items-center justify-center text-[#DCE2F0]">
+  <div class="bg-[#50586C] p-8 rounded-2xl shadow-[0_0_20px_rgba(220,226,240,0.2)] w-full max-w-sm">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center gap-2">
+        <i data-feather="cpu" class="w-5 h-5"></i>
+        <h1 class="text-xl font-bold">SPSUL AI</h1>
+      </div>
+      <span class="text-sm text-[#DCE2F0]/70">v1.1</span>
+    </div>
+
+    <!-- Form -->
+    <form id="loginForm" class="flex flex-col space-y-5">
+      <!-- Username -->
+      <div class="relative">
+        <i data-feather="user" class="absolute left-3 top-3.5 w-5 h-5 text-[#DCE2F0]/80 pointer-events-none"></i>
+        <input 
+          type="text" 
+          id="username" 
+          placeholder="Uživatelské jméno" 
+          class="bg-[#50586C] text-[#DCE2F0] rounded-md pl-10 pr-3 p-3 w-full border border-[#DCE2F0]/30 focus:outline-none focus:ring-2 focus:ring-[#DCE2F0] placeholder:text-[#DCE2F0]/60"
+          required
+          autocomplete="username"
+        />
+        <div class="text-xs text-[#DCE2F0]/70 mt-1 pl-1 flex items-center gap-1">
+          <i data-feather="info" class="w-4 h-4" title="Zadej stejné jméno jako do Bakalářů."></i>
+          Přihlašovací jméno z Bakalářů.
+        </div>
+      </div>
+
+      <!-- Password -->
+      <div class="relative">
+        <i data-feather="lock" class="absolute left-3 top-3.5 w-5 h-5 text-[#DCE2F0]/80 pointer-events-none"></i>
+        <input 
+          type="password" 
+          id="password" 
+          placeholder="Heslo" 
+          class="bg-[#50586C] text-[#DCE2F0] rounded-md pl-10 pr-3 p-3 w-full border border-[#DCE2F0]/30 focus:outline-none focus:ring-2 focus:ring-[#DCE2F0] placeholder:text-[#DCE2F0]/60"
+          required
+          autocomplete="current-password"
+        />
+        <div class="text-xs text-[#DCE2F0]/70 mt-1 pl-1 flex items-center gap-1">
+          <i data-feather="info" class="w-4 h-4" title="Zadej stejné heslo jako do Bakalářů."></i>
+          Heslo z Bakalářů.
+        </div>
+      </div>
+
+      <!-- Login Button -->
+      <button 
+        type="submit" 
+        id="loginBtn" 
+        class="bg-[#DCE2F0] text-[#50586C] font-semibold py-2 rounded-md hover:bg-[#cdd3e0] transition duration-200"
+      >
+        Přihlásit se
+      </button>
+
+      <!-- Error Message -->
+      <p id="loginError" class="text-red-400 text-sm text-center hidden">Neplatné přihlašovací údaje</p>
+    </form>
+  </div>
+
+  <script>
+    feather.replace();
+
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+
+      const errorEl = document.getElementById('loginError');
+      errorEl.classList.add('hidden');
+
+      try {
+        const response = await fetch('https://ai.spsul.cz/api/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({ username, password })
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          // Save auth data to localStorage
+          localStorage.setItem('spsulAI_auth', JSON.stringify(result));
+          // Redirect to index.html
+          window.location.href = 'index.html';
+        } else {
+          const errorData = await response.json();
+          console.error('Chyba:', errorData);
+          errorEl.textContent = errorData.detail?.[0]?.msg || 'Neznámá chyba';
+          errorEl.classList.remove('hidden');
+        }
+      } catch (err) {
+        console.error('Chyba požadavku:', err);
+        errorEl.textContent = 'Nelze se připojit k serveru.';
+        errorEl.classList.remove('hidden');
+      }
+    });
+  </script>
+</body>
+</html>

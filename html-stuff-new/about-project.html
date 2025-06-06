@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SPSUL AI – O projektu</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: transparent;
+      color: #DCE2F0;
+    }
+    h1, h2, h3 {
+      margin-top: 1rem;
+      margin-bottom: 0.5rem;
+    }
+    .tooltip-icon {
+      opacity: 0.5;
+      transition: opacity 0.2s;
+    }
+    .tooltip-icon:hover {
+      opacity: 1;
+    }
+    .tooltip-text {
+      visibility: hidden;
+      width: 180px;
+      background-color: #DCE2F0;
+      color: #50586C;
+      text-align: center;
+      border-radius: 4px;
+      padding: 4px;
+      position: absolute;
+      z-index: 10;
+      bottom: 125%;
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0;
+      transition: opacity 0.3s;
+      font-size: 0.75rem;
+    }
+    .tooltip-container:hover .tooltip-text {
+      visibility: visible;
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="p-6">
+    <h1 class="text-3xl font-bold">O projektu SPSUL AI</h1>
+
+    <div class="mt-6 space-y-6">
+
+      <div>
+        <h2 class="text-2xl font-semibold">Úvod</h2>
+        <p>
+          SPSUL AI je školní aplikace založená na umělé inteligenci, která usnadňuje komunikaci mezi
+          žáky a učiteli. Projekt vznikl jako ročníková práce na Střední průmyslové škole uhlířská
+          v Olomouci.
+        </p>
+      </div>
+
+      <div>
+        <h2 class="text-2xl font-semibold">Cíl projektu</h2>
+        <p>
+          Hlavním cílem je poskytnout žákům i učitelům jednoduché rozhraní pro generování odpovědí,
+          zodpovídání dotazů a správu přístupu. Učitelům je umožněno kdykoli odebrat nebo znovu
+          povolit přístup konkrétním uživatelům.
+        </p>
+      </div>
+
+      <div>
+        <h2 class="text-2xl font-semibold">Klíčové funkce</h2>
+        <ul class="list-disc list-inside ml-4 space-y-2">
+          <li>
+            <strong>Generování odpovědí AI:</strong> Žáci mohou klást otázky a AI jim okamžitě
+            odpovídá.
+          </li>
+          <li>
+            <strong>Správa přístupu pro učitele:</strong> 
+            Učitelé mají sekci „Pro učitele“, kde během okamžiku odeberou práva nebo přidají uživatele.
+          </li>
+          <li>
+            <strong>Jednoduché přihlášení:</strong> Přihlášení probíhá pomocí účtů z Bakalářů.
+          </li>
+        </ul>
+      </div>
+
+      <div>
+        <h2 class="text-2xl font-semibold">Autor projektu</h2>
+        <p>
+          Projekt byl vytvořen jako ročníková práce studentem <strong>Jan Poloha</strong>
+        </p>
+      </div>
+
+      <div>
+        <h2 class="text-2xl font-semibold">Použití</h2>
+        <p>
+          Po přihlášení pomocí účtu z Bakalářů mohou žáci zadávat dotazy do chatového okna, kde
+          jejich požadavky zpracuje AI. Učitelé poté mohou v sekci „Pro učitele“:
+        </p>
+        <ul class="list-disc list-inside ml-4 space-y-2">
+          <li>zobrazit seznam přihlášených žáků,</li>
+          <li>odebrat přístup konkrétnímu žákovi,</li>
+          <li>povolit přístup novému uživateli,</li>
+          <li>zobrazit či resetovat jeho API klíč.</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    feather.replace();
+  </script>
+</body>
+</html>

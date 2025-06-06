@@ -1,98 +1,96 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="cs">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Custom Chat Layout</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css"><!-- Use the Monokai theme -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/styles/monokai.min.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SPSUL AI - Hlavní stránka</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background-color: #50586C;
+      background-image: radial-gradient(#DCE2F0 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+  </style>
+  <script src="https://unpkg.com/feather-icons"></script>
 </head>
-<body id="main-content">
-  <div class="container-fluid">
-    <div class="row">
-      <!-- Left Column -->
-      <div class="col-12 col-md-2 column-left">
-        <div class="card">
-          <!-- User Info -->
-          <div class="user-info">
-            <i class="fas fa-user-circle"></i>
-            <div>
-              <div id="user-name">Jméno</div>
-              <div id="user-email">prijmeni@zak.spsul.cz</div>
-            </div>
-          </div>
-          <!-- Options -->
-          <div class="option" id="logout">
-            <span>Odhlásit</span>
-            <i class="fas fa-sign-out-alt"></i>
-          </div>
-          <div class="option" id="api-key">
-            <span>API klíč</span>
-            <i class="fas fa-key"></i>
-          </div>
-          <div class="option settings" onclick="toggleSettingsColor(this)">
-            <span>Nastavení</span>
-            <i class="fas fa-cog"></i>
-          </div>
-          <div class="option" id="info">
-            <span>O projektu</span>
-            <i class="fas fa-info-circle"></i>
-          </div>
-          <div class="option" id="teacher">
-            <span>Pro učitele</span>
-            <i class="fas fa-chalkboard-teacher"></i>
-          </div>
-        </div>
-        <div class="cat-icon">
-          <i class="fas fa-cat"></i>
-        </div>
-      </div>
-
-      <!-- Right Column -->
-      <div class="col-12 col-md-10 column-right">
-        <div class="chat-container" id="chat-container">
-          <p>
-            Toto je začátek tvé konverzace
-          </p>
-        </div>
-        <div class="input-container">
-          <textarea id="message-input" rows="1" placeholder="Co máš na mysli...?"></textarea>
-          <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
-          <button id="stop-generating" style="display:none;" onclick="stopGenerating()"><i class="fas fa-stop"></i> Přestaň</button>
-        </div>
-        <div id="ratingPopup" class="rating-popup">
-          <div class="title">Ohodnoť prosím konverzaci</div>
-          <div class="emoticons">
-            <span data-rating="1" class="emoticon">😠</span>
-            <span data-rating="2" class="emoticon">😕</span>
-            <span data-rating="3" class="emoticon">😐</span>
-            <span data-rating="4" class="emoticon">😊</span>
-            <span data-rating="5" class="emoticon">😍</span>
-          </div>
-        </div>
-        
+<body class="min-h-screen flex text-[#DCE2F0]">
+  <!-- Sidebar -->
+  <aside class="bg-[#50586C] p-8 rounded-2xl shadow-[0_0_20px_rgba(220,226,240,0.2)] w-72 flex flex-col">
+    <!-- User Info -->
+    <div class="flex items-center gap-3 mb-8">
+      <i data-feather="user" class="w-6 h-6"></i>
+      <div>
+        <div id="user-name" class="text-lg font-semibold">Načítání...</div>
+        <div id="user-role" class="text-sm text-[#DCE2F0]/70">Role</div>
       </div>
     </div>
-  </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.3/dist/purify.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/highlight.min.js"></script>
-  
-  <script src="scripts/chat.js"></script>
+    <!-- Buttons -->
+    <div class="flex flex-col gap-4">
+      <button id="teacher-btn" class="hidden bg-[#DCE2F0] text-[#50586C] py-2 rounded-md font-semibold hover:bg-[#cdd3e0] transition">
+        <i data-feather="award" class="w-5 h-5 inline-block mr-2"></i>Pro učitele
+      </button>
+      <button id="api-btn" class="bg-[#DCE2F0] text-[#50586C] py-2 rounded-md font-semibold hover:bg-[#cdd3e0] transition">
+        <i data-feather="server" class="w-5 h-5 inline-block mr-2"></i>API
+      </button>
+      <button id="about-btn" class="bg-[#DCE2F0] text-[#50586C] py-2 rounded-md font-semibold hover:bg-[#cdd3e0] transition">
+        <i data-feather="info" class="w-5 h-5 inline-block mr-2"></i>O projektu
+      </button>
+      <button id="logout-btn" class="bg-[#DCE2F0] text-[#50586C] py-2 rounded-md font-semibold hover:bg-[#cdd3e0] transition mt-auto">
+        <i data-feather="log-out" class="w-5 h-5 inline-block mr-2"></i>Odhlásit se
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 p-8">
+    <div class="bg-[#50586C] p-8 rounded-2xl shadow-[0_0_20px_rgba(220,226,240,0.2)] h-full">
+      <iframe
+        id="main-frame"
+        src="about:blank"
+        class="w-full h-full rounded-lg border border-[#DCE2F0]/20"
+        frameborder="0"
+        loading="lazy">
+      </iframe>
+    </div>
+  </main>
 
   <script>
-  hljs.highlightAll();
+    feather.replace();
 
-// Attach event listener to the API klíč element
-document.getElementById('api-key').addEventListener('click', function() {
-  // Change the label to "Pro vyvojare"
-  this.innerHTML = '<span>Pro vyvojare</span><i class="fas fa-key"></i>';
-  // Redirect to the API documentation page
-  window.location.href = 'api.html';
-});
+    // načtení uložených přihlašovacích dat
+    const raw = localStorage.getItem('spsulAI_auth');
+    if (!raw) {
+      window.location.href = 'login.html';
+    } else {
+      const auth = JSON.parse(raw);
+      const { full_name, classroom, is_teacher } = auth.user_info || {};
+
+      document.getElementById('user-name').textContent = full_name || 'Neznámý uživatel';
+      document.getElementById('user-role').textContent = classroom ? `Třída: ${classroom}` : '';
+
+      if (is_teacher) {
+        document.getElementById('teacher-btn').classList.remove('hidden');
+      }
+
+      // Výchozí zobrazení: chat
+      document.getElementById('main-frame').src = '/chat.html';
+
+      document.getElementById('teacher-btn').addEventListener('click', () => {
+        document.getElementById('main-frame').src = '/teacher-dashboard.html';
+      });
+      document.getElementById('api-btn').addEventListener('click', () => {
+        document.getElementById('main-frame').src = '/api-info.html';
+      });
+      document.getElementById('about-btn').addEventListener('click', () => {
+        document.getElementById('main-frame').src = '/about-project.html';
+      });
+      document.getElementById('logout-btn').addEventListener('click', () => {
+        localStorage.removeItem('spsulAI_auth');
+        window.location.href = 'login.html';
+      });
+    }
   </script>
 </body>
 </html>

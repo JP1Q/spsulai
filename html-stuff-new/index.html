@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SPSUL AI – Chat Rozhraní</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background-color: #50586C;
+      background-image: radial-gradient(#DCE2F0 1px, transparent 1px);
+      background-size: 20px 20px;
+      margin: 0;
+    }
+    /* Třída pro vybrané tlačítko */
+    .selected {
+      background-color: #DCE2F0;
+      color: #50586C;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transform: translateX(8px);
+    }
+    /* Hover efekt pro nevybraná tlačítka: poloprůhledné pozadí a odsunutí */
+    .nav-btn:hover:not(.selected) {
+      background-color: rgba(220, 226, 240, 0.2);
+      transform: translateX(4px);
+    }
+  </style>
+  <script src="https://unpkg.com/feather-icons"></script>
+</head>
+<body class="h-screen flex text-[#DCE2F0]">
+  <!-- Sidebar -->
+  <aside class="w-72 bg-[#50586C] flex flex-col p-6 shadow-[0_0_20px_rgba(220,226,240,0.2)] overflow-visible">
+    <!-- Logo / Název -->
+    <div class="mb-4">
+      <div class="flex items-center gap-2">
+        <i data-feather="cpu" class="w-5 h-5 text-[#DCE2F0]"></i>
+        <h1 class="text-xl font-bold">SPSUL AI</h1>
+      </div>
+      <div class="mt-1 text-sm text-[#DCE2F0]/70">v1.1</div>
+    </div>
+
+    <!-- Zobrazit jméno uživatele -->
+    <div id="user-info" class="mb-8 text-sm text-[#DCE2F0]">
+      <i data-feather="user" class="w-4 h-4 inline-block mr-1"></i>
+      <span id="user-name">Načítání...</span>
+    </div>
+
+    <!-- Navigační tlačítka -->
+    <nav class="flex flex-col gap-4 flex-grow">
+      <!-- Chat tlačítko (vybrané výchozí) -->
+      <button
+        id="chat-btn"
+        class="nav-btn selected flex items-center gap-3 py-2 px-4 rounded-r-md shadow-md -mr-4 relative left-4 transition-transform duration-200"
+        title="Chat"
+      >
+        <i data-feather="message-circle" class="w-5 h-5"></i>
+        <span>Chat</span>
+      </button>
+
+      <!-- Pro učitele -->
+      <button
+        id="teacher-btn"
+        class="nav-btn hidden flex items-center gap-3 py-2 px-4 rounded-md transition-transform duration-200"
+        title="Pro učitele"
+      >
+        <i data-feather="award" class="w-5 h-5"></i>
+        <span>Pro učitele</span>
+      </button>
+
+      <!-- API -->
+      <button
+        id="api-btn"
+        class="nav-btn flex items-center gap-3 py-2 px-4 rounded-md transition-transform duration-200"
+        title="API"
+      >
+        <i data-feather="server" class="w-5 h-5"></i>
+        <span>API</span>
+      </button>
+
+      <!-- O projektu -->
+      <button
+        id="about-btn"
+        class="nav-btn flex items-center gap-3 py-2 px-4 rounded-md transition-transform duration-200"
+        title="O projektu"
+      >
+        <i data-feather="info" class="w-5 h-5"></i>
+        <span>O projektu</span>
+      </button>
+    </nav>
+
+    <!-- Odhlásit se ve spodní části -->
+    <button
+      id="logout-btn"
+      class="mt-auto flex items-center gap-3 py-2 px-4 rounded-md transition-transform duration-200"
+      title="Odhlásit se"
+    >
+      <i data-feather="log-out" class="w-5 h-5"></i>
+      <span>Odhlásit se</span>
+    </button>
+  </aside>
+
+  <!-- Hlavní kontejner připravený na iframe -->
+  <main class="flex-1 bg-[#50586C] m-6 rounded-2xl shadow-[0_0_20px_rgba(220,226,240,0.2)] overflow-hidden">
+    <iframe
+      id="main-frame"
+      src="/chat.html"
+      class="w-full h-full"
+      frameborder="0"
+      loading="lazy"
+    ></iframe>
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      feather.replace();
+
+      // Načtení přihlašovacích dat
+      const raw = localStorage.getItem('spsulAI_auth');
+      if (!raw) {
+        window.location.href = 'login.html';
+        return;
+      }
+      const auth = JSON.parse(raw);
+      const { full_name, is_teacher } = auth.user_info || {};
+
+      // Zobrazit jméno uživatele
+      document.getElementById('user-name').textContent = full_name || 'Neznámý uživatel';
+
+      // Zobrazit "Pro učitele" pouze pokud je is_teacher = true
+      if (is_teacher) {
+        document.getElementById('teacher-btn').classList.remove('hidden');
+      }
+
+      // Přepínání obsahu v rámci iframe
+      const iframe = document.getElementById('main-frame');
+      const buttons = document.querySelectorAll('.nav-btn');
+
+      function selectButton(btn) {
+        buttons.forEach(b => b.classList.remove('selected', '-mr-4', 'rounded-r-md', 'left-4'));
+        btn.classList.add('selected', '-mr-4', 'rounded-r-md', 'left-4');
+      }
+
+      document.getElementById('chat-btn').addEventListener('click', () => {
+        iframe.src = '/chat.html';
+        selectButton(document.getElementById('chat-btn'));
+      });
+      document.getElementById('teacher-btn').addEventListener('click', () => {
+        iframe.src = '/teacher-dashboard.html';
+        selectButton(document.getElementById('teacher-btn'));
+      });
+      document.getElementById('api-btn').addEventListener('click', () => {
+        iframe.src = '/api-info.html';
+        selectButton(document.getElementById('api-btn'));
+      });
+      document.getElementById('about-btn').addEventListener('click', () => {
+        iframe.src = '/about-project.html';
+        selectButton(document.getElementById('about-btn'));
+      });
+      document.getElementById('logout-btn').addEventListener('click', () => {
+        localStorage.removeItem('spsulAI_auth');
+        window.location.href = 'login.html';
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SPSUL AI – API Dokumentace</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/highlight.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/styles/monokai.min.css" rel="stylesheet">
+  <style>
+    body { margin: 0; font-family: sans-serif; background: transparent; color: #DCE2F0; }
+    h1, h2 { margin: 1rem 0 0.5rem; }
+    .endpoint-header { cursor: pointer; display: flex; align-items: center; gap: 0.5rem; }
+    .endpoint-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out, padding 0.3s ease-out; }
+    .endpoint-content.open { padding: 1rem 0; max-height: 1000px; transition: max-height 0.5s ease-in, padding 0.3s ease-in; }
+    .tooltip-icon { opacity: 0.5; transition: opacity 0.2s; }
+    .endpoint-header:hover .tooltip-icon { opacity: 1; }
+    pre { background: #50586C; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; }
+    code { font-family: monospace; }
+    code.inline { background: #50586C; padding: 0.1rem 0.2rem; border-radius: 0.2rem; }
+    .tooltip-text {
+      visibility: hidden;
+      width: 220px;
+      background-color: #DCE2F0;
+      color: #50586C;
+      text-align: center;
+      border-radius: 4px;
+      padding: 4px;
+      position: absolute;
+      z-index: 10;
+      bottom: 125%;
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0;
+      transition: opacity 0.3s;
+      font-size: 0.75rem;
+    }
+    .tooltip-container:hover .tooltip-text {
+      visibility: visible;
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="p-6">
+    <h1 class="text-3xl font-bold">API Dokumentace</h1>
+    <div class="space-y-6 mt-6">
+
+      <!-- Rate limit info (aligned better) -->
+      <div class="relative bg-[#DCE2F0]/10 border-l-4 border-[#DCE2F0] p-4 rounded-md flex items-start gap-3">
+        <i data-feather="alert-triangle" class="w-5 h-5 text-[#ffc107] mt-0.5"></i>
+        <div class="flex items-center gap-2">
+          <span><strong>Omezení počtu požadavků:</strong> max. 60 za minutu</span>
+          <div class="tooltip-container relative">
+            <i data-feather="info" class="w-5 h-5 text-[#DCE2F0]/60"></i>
+            <span class="tooltip-text">Překročení limitu může dočasně zablokovat přístup.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Endpoint: /generate_response -->
+      <div class="border border-[#DCE2F0]/30 rounded-lg p-4">
+        <div class="endpoint-header">
+          <i data-feather="chevron-down" class="tooltip-icon w-5 h-5"></i>
+          <span class="font-semibold">POST <code class="inline">/generate_response</code></span>
+        </div>
+        <div class="endpoint-content">
+          <p><strong>Popis:</strong> Vygeneruje odpověď AI jako streamovaný text.</p>
+
+          <h2>Parametry</h2>
+          <ul class="list-disc list-inside ml-4">
+            <li><code>model</code> <em>(string, povinné)</em> – Název modelu, např. “tinyllama”</li>
+            <li><code>prompt</code> <em>(string, povinné)</em> – Vstupní text pro AI</li>
+          </ul>
+
+          <h2>Příklad JSON těla požadavku</h2>
+          <pre><code class="json">
+{ "model": "tinyllama", "prompt": "Napiš krátkou zprávu" }
+          </code></pre>
+
+          <h2>Jak číst stream (JavaScript)</h2>
+          <pre><code class="javascript">
+const resp = await fetch('https://ai.spsul.cz/chat/generate_response', {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer VÁŠ_API_KLÍČ`,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({model:'tinyllama', prompt:'Ahoj světe'})
+});
+const reader = resp.body.getReader();
+const dec = new TextDecoder();
+let txt = '';
+while(true){
+  const {done,value} = await reader.read();
+  if(done) break;
+  txt += dec.decode(value, {stream:true});
+  console.log(txt);
+}
+          </code></pre>
+
+          <h2>Odpověď</h2>
+          <p>Vrací čistý text (stream z Ollamy). Váš frontend jej zobrazí přímo.</p>
+        </div>
+      </div>
+
+      <!-- Endpoint: /models -->
+      <div class="border border-[#DCE2F0]/30 rounded-lg p-4">
+        <div class="endpoint-header">
+          <i data-feather="chevron-down" class="tooltip-icon w-5 h-5"></i>
+          <span class="font-semibold">GET <code class="inline">/models</code></span>
+        </div>
+        <div class="endpoint-content">
+          <p><strong>Popis:</strong> Vrací seznam dostupných modelů.</p>
+
+          <h2>Příklad odpovědi</h2>
+          <pre><code class="json">
+{
+  "models":[
+    { "name":"tinyllama","size":"1B" },
+    { "name":"llama2","size":"7B" }
+  ]
+}
+          </code></pre>
+        </div>
+      </div>
+
+      <!-- Endpoint: /login -->
+      <div class="border border-[#DCE2F0]/30 rounded-lg p-4">
+        <div class="endpoint-header">
+          <i data-feather="chevron-down" class="tooltip-icon w-5 h-5"></i>
+          <span class="font-semibold">POST <code class="inline">/login</code></span>
+        </div>
+        <div class="endpoint-content">
+          <p><strong>Popis:</strong> Přihlásí uživatele přes Bakaláře nebo lokální údaje.</p>
+
+          <h2>JSON tělo požadavku</h2>
+          <pre><code class="json">
+{ "username":"string", "password":"string" }
+          </code></pre>
+
+          <h2>Odpověď (200)</h2>
+          <pre><code class="json">
+{
+  "access_token":"…",
+  "api_key":"…",
+  "expires_in":1800,
+  "token_type":"bearer",
+  "user_info":{
+    "full_name":"Poloha Jan",
+    "classroom":"3ITA",
+    "is_admin":false,
+    "is_teacher":false
+  }
+}
+          </code></pre>
+
+          <h2>Chyby</h2>
+          <p><strong>422 Unprocessable Entity:</strong> vadný JSON nebo chybějící pole.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    feather.replace();
+    document.querySelectorAll('.endpoint-header').forEach(h => {
+      h.addEventListener('click', () => {
+        const ico = h.querySelector('i');
+        const c   = h.nextElementSibling;
+        const open = c.classList.toggle('open');
+        ico.dataset['feather'] = open ? 'chevron-up' : 'chevron-down';
+        feather.replace();
+      });
+    });
+    document.querySelectorAll('pre code').forEach(b => hljs.highlightElement(b));
+  </script>
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SPSUL AI – Chat</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+  <style>
+    body {
+      background-color: #50586C;
+    }
+
+    textarea:focus {
+      outline: none !important;
+      box-shadow: none !important;
+      border-color: transparent !important;
+    }
+
+    #chat-input {
+      max-height: 14rem; /* ~9 lines */
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body class="h-screen flex flex-col justify-between text-[#DCE2F0] bg-[#50586C]">
+  <!-- Chat display area -->
+  <div id="chat-container" class="flex-1 overflow-y-auto p-6 space-y-4">
+    <!-- Messages will be appended here -->
+  </div>
+
+  <!-- Message input box -->
+  <form id="chat-form" class="w-full flex justify-center p-4">
+    <div class="w-full max-w-2xl flex items-end bg-[#50586C] border border-[#DCE2F0]/20 rounded-xl px-4 py-2 shadow-md">
+      <textarea
+        id="chat-input"
+        rows="1"
+        placeholder="Napiš zprávu..."
+        class="w-full resize-none bg-transparent text-[#DCE2F0] placeholder-[#DCE2F0]/60 p-2 focus:outline-none focus:ring-0 focus:border-transparent focus:shadow-none"
+      ></textarea>
+      <button
+        type="submit"
+        class="p-2 rounded-md hover:bg-[#DCE2F0]/10 transition"
+        title="Odeslat"
+      >
+        <i data-feather="arrow-up" class="w-5 h-5 text-[#DCE2F0]"></i>
+      </button>
+      <button
+        type="button"
+        id="stop-generating"
+        class="ml-2 p-2 rounded-md hover:bg-[#DCE2F0]/10 transition hidden"
+        title="Zastavit generování"
+      >
+        <i data-feather="x" class="w-5 h-5 text-[#DCE2F0]"></i>
+      </button>
+    </div>
+  </form>
+
+  <script>
+    feather.replace();
+
+    const chatForm = document.getElementById('chat-form');
+    const chatInput = document.getElementById('chat-input');
+    const chatContainer = document.getElementById('chat-container');
+    const stopButton = document.getElementById('stop-generating');
+
+    let abortController = null;
+    let bubbleCount = 0;
+
+    // Auto-grow textarea up to ~9 lines
+    chatInput.addEventListener('input', () => {
+      chatInput.style.height = 'auto';
+      chatInput.style.height = Math.min(chatInput.scrollHeight, 224) + 'px';
+    });
+
+    // Enter to send, Shift+Enter for new line
+    chatInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        chatForm.requestSubmit();
+      }
+    });
+
+    // Append a chat bubble
+    function appendBubble(role, content) {
+      const bubble = document.createElement('div');
+      bubble.id = `bubble-${++bubbleCount}`;
+      bubble.className = role === 'user'
+        ? 'bg-[#DCE2F0]/20 p-4 rounded-md max-w-xl ml-auto whitespace-pre-wrap'
+        : 'bg-[#DCE2F0]/10 p-4 rounded-md max-w-xl whitespace-pre-wrap';
+
+      bubble.textContent = content;
+      chatContainer.appendChild(bubble);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+      return bubble.id;
+    }
+
+    // Update an existing bubble (for streaming)
+    function updateBubble(id, content) {
+      const bubble = document.getElementById(id);
+      if (bubble) {
+        bubble.textContent = content;
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }
+    }
+
+    // Handle form submission
+    chatForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const message = chatInput.value.trim();
+      if (!message) return;
+
+      // Create user bubble
+      appendBubble('user', message);
+      chatInput.value = '';
+      chatInput.style.height = 'auto';
+
+      // Create bot bubble with loading indicator
+      const botBubbleId = appendBubble('ai', '…');
+
+      // Show stop button
+      stopButton.classList.remove('hidden');
+
+      // Prepare to call streaming endpoint
+      const authData = JSON.parse(localStorage.getItem('spsulAI_auth') || '{}');
+      const apiKey = authData.api_key; // Assuming API key is in authData.api_key
+      const endpoint = 'https://ai.spsul.cz/chat/generate_response';
+      abortController = new AbortController();
+
+      try {
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+          },
+          body: JSON.stringify({ model: 'tinyllama', prompt: message }),
+          signal: abortController.signal
+        });
+
+        if (!response.ok || !response.body) {
+          throw new Error(`Chyba serveru: ${response.status}`);
+        }
+
+        // Read streaming response
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          updateBubble(botBubbleId, buffer);
+        }
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          console.error('Chyba při generování odpovědi:', err);
+          updateBubble(botBubbleId, 'Nastala chyba při načítání odpovědi.');
+        }
+      } finally {
+        stopButton.classList.add('hidden');
+        abortController = null;
+      }
+    });
+
+    // Stop generating on button click
+    stopButton.addEventListener('click', () => {
+      if (abortController) {
+        abortController.abort();
+      }
+    });
+  </script>
+</body>
+</html>
