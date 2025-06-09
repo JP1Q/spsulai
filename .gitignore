@@ -1,2 +1,4 @@
 .env
 firebase-credentials.json
+api-stuff/firebase.json
+api-stuff/fun.env
