@@ -1,289 +1,183 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="cs">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Teacher Dashboard</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/styles/monokai.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Heroicons CDN -->
+  <script src="https://unpkg.com/feather-icons"></script>
+  <style>
+    body {
+      background: transparent;
+      color: #1F2937; /* tmavě šedá pro text */
+      font-family: system-ui, sans-serif;
+    }
+    /* Dvě barvy: tmavě šedá text (#1F2937) a akcentní modrá (#3B82F6) */
+  </style>
 </head>
-<body id="main-content">
-  <div class="container-fluid">
-    <div class="row">
-      <!-- Left Column -->
-      <div class="col-2 column-left">
-        <div class="card">
-          <!-- User Info -->
-          <div class="user-info p-3 d-flex align-items-center">
-            <i class="fas fa-user-circle fa-2x"></i>
-            <div class="ms-2">
-              <div id="user-name">Jméno</div>
-              <div id="user-email">prijmeni@zak.spsul.cz</div>
-            </div>
-          </div>
-          <!-- Options -->
-          <div class="option p-2" id="logout">
-            <span><i class="fas fa-sign-out-alt"></i> Odhlásit</span>
-          </div>
-          <div class="option p-2" id="api-key">
-            <span><i class="fas fa-key"></i> API klíč</span>
-          </div>
-          <div class="option p-2 settings" onclick="toggleSettingsColor(this)">
-            <span><i class="fas fa-cog"></i> Nastavení</span>
-          </div>
-          <div class="option p-2" id="info">
-            <span><i class="fas fa-info-circle"></i> O projektu</span>
-          </div>
-          <div class="option p-2" id="backtochat">
-            <span><i class="fas fa-chalkboard-teacher"></i> Zpátky do chatu</span>
-          </div>
-        </div>
-        <div class="cat-icon text-center mt-3">
-          <i class="fas fa-cat fa-2x"></i>
+<body>
+  <div class="p-6 max-w-4xl mx-auto space-y-6">
+    <!-- Horní lišta -->
+    <div class="flex items-center justify-between">
+      <h1 class="text-2xl font-bold text-gray-800">Učitelský Dashboard</h1>
+      <button id="logout" class="flex items-center space-x-1 text-blue-500 hover:text-blue-700">
+        <i data-feather="log-out"></i>
+        <span>Odhlásit</span>
+      </button>
+    </div>
+
+    <!-- Výběr třídy a vyhledávání -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <select id="class-selector" class="col-span-2 p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+        <option value="">Načítání tříd...</option>
+      </select>
+      <div class="relative">
+        <input 
+          type="text" 
+          id="search-bar" 
+          class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" 
+          placeholder="Vyhledat studenta…"
+        />
+        <i data-feather="search" class="absolute right-3 top-3 text-gray-400"></i>
+      </div>
+    </div>
+
+    <!-- Statistiky -->
+    <div class="grid grid-cols-2 gap-4">
+      <div class="p-4 bg-white border rounded shadow-sm flex items-center space-x-4">
+        <i data-feather="user-check" class="w-6 h-6 text-blue-500"></i>
+        <div>
+          <div class="text-lg font-semibold" id="active-users-count">0</div>
+          <div class="text-sm text-gray-500">Aktivní studenti</div>
         </div>
       </div>
-
-      <!-- Right Column -->
-      <div class="col-10 column-right">
-        <div class="dashboard-container p-3">
-          <!-- Class Selector & Search Bar -->
-          <div class="mb-3">
-            <select id="class-selector" class="form-select">
-              <option value="">Loading classes...</option>
-            </select>
-          </div>
-          <div class="mb-3">
-            <input type="text" id="search-bar" class="form-control" placeholder="Search users...">
-          </div>
-          <!-- Statistics Cards -->
-          <div class="stats-container mb-4 d-flex">
-            <div class="stat-card p-3 me-3 border rounded">
-              <h3>Active Users</h3>
-              <div id="active-users-count" class="stat-number">0</div>
-            </div>
-            <div class="stat-card p-3 border rounded">
-              <h3>Total Users</h3>
-              <div id="total-users-count" class="stat-number">0</div>
-            </div>
-          </div>
-          <!-- User List -->
-          <div class="user-list">
-            <h3 class="mb-3">Class Users</h3>
-            <div id="users-container">
-              <!-- Users will be loaded here dynamically -->
-            </div>
-          </div>
+      <div class="p-4 bg-white border rounded shadow-sm flex items-center space-x-4">
+        <i data-feather="users" class="w-6 h-6 text-blue-500"></i>
+        <div>
+          <div class="text-lg font-semibold" id="total-users-count">0</div>
+          <div class="text-sm text-gray-500">Celkový počet studentů</div>
         </div>
+      </div>
+    </div>
+
+    <!-- Seznam studentů -->
+    <div class="space-y-4">
+      <h2 class="text-xl font-semibold text-gray-800">Seznam studentů</h2>
+      <div id="users-container" class="space-y-2">
+        <!-- Dynamicky generované položky -->
       </div>
     </div>
   </div>
 
-  <!-- JS Libraries -->
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.3/dist/purify.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/highlight.min.js"></script>
   <script>
-    // Initialize Highlight.js
-    hljs.highlightAll();
+    feather.replace();
 
-    // Get username from localStorage
-    const username = localStorage.getItem("username");
-    const userEmailElement = document.getElementById("user-email");
-    const userNameElement = document.getElementById("user-name");
-    const logoutBtn = document.getElementById("logout");
-    const backToChatBtn = document.getElementById("backtochat");
-
-    // User info setup
-    if (username) {
-      const emailDomain = /\d/.test(username) ? "zak.spsul.cz" : "spsul.cz";
-      userEmailElement.textContent = `${username}@${emailDomain}`;
-      userNameElement.textContent = username;
-    } else {
-      alert("You need to log in first.");
-      window.location.href = "login.html";
-    }
-
-    // Logout
-    logoutBtn.addEventListener("click", () => {
-      localStorage.clear();
-      window.location.href = "login.html";
-    });
-
-    // Back to chat
-    backToChatBtn.addEventListener("click", () => {
-      window.location.href = "index.html";
-    });
-
-    // Dashboard functionality
-    let currentClass = null;
+    const selector = document.getElementById('class-selector');
+    const searchBar = document.getElementById('search-bar');
     let currentUsers = [];
 
-    // Load teacher's classes
     async function loadClasses() {
-      try {
-        const response = await fetch('/teacher-classes', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        });
-        
-        if (!response.ok) throw new Error('Failed to load classes');
-        
-        const data = await response.json();
-        const selector = document.getElementById('class-selector');
-        
-        selector.innerHTML = '';
-        if (data.classes.length === 0) {
-          selector.innerHTML = '<option value="">No classes found</option>';
-          return;
-        }
-        
-        data.classes.forEach(cls => {
-          const option = document.createElement('option');
-          option.value = cls.name;
-          option.textContent = cls.name;
-          selector.appendChild(option);
-        });
-        
-        // Set up event listener for class selection
-        selector.addEventListener('change', async (e) => {
-          currentClass = e.target.value;
-          await loadClassUsers(currentClass);
-        });
-        
-        // Load first class by default
-        if (data.classes.length > 0) {
-          currentClass = data.classes[0].name;
-          selector.value = currentClass;
-          await loadClassUsers(currentClass);
-        }
-      } catch (error) {
-        console.error('Error loading classes:', error);
-        alert('Failed to load classes');
+      const res = await fetch('/teacher-classes', {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      const data = await res.json();
+      selector.innerHTML = data.classes.map(c =>
+        `<option value="${c.name}">${c.name}</option>`
+      ).join('');
+      selector.addEventListener('change', () => loadUsers(selector.value));
+      if (data.classes.length) {
+        selector.value = data.classes[0].name;
+        loadUsers(selector.value);
       }
     }
 
-    // Load users for selected class
-    async function loadClassUsers(classroom) {
-      try {
-        const response = await fetch(`/class-users/${classroom}`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        });
-        
-        if (!response.ok) throw new Error('Failed to load users');
-        
-        const data = await response.json();
-        currentUsers = data.users;
-        renderUsers();
-        updateStats();
-      } catch (error) {
-        console.error('Error loading users:', error);
-        alert('Failed to load users');
-      }
+    async function loadUsers(className) {
+      const res = await fetch(`/class-users/${className}`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      const data = await res.json();
+      currentUsers = data.users;
+      renderUsers();
+      updateStats();
     }
 
-    // Render users in the UI
     function renderUsers(filter = '') {
       const container = document.getElementById('users-container');
       container.innerHTML = '';
-      
-      const filteredUsers = currentUsers.filter(user => 
-        user.name.toLowerCase().includes(filter.toLowerCase()) ||
-        user.username.toLowerCase().includes(filter.toLowerCase())
+      const filtered = currentUsers.filter(u =>
+        u.name.toLowerCase().includes(filter.toLowerCase()) ||
+        u.username.toLowerCase().includes(filter.toLowerCase())
       );
-      
-      if (filteredUsers.length === 0) {
-        container.innerHTML = '<div class="text-muted">No users found</div>';
+      if (!filtered.length) {
+        container.innerHTML = `<div class="text-gray-500 italic">Žádní studenti</div>`;
         return;
       }
-      
-      filteredUsers.forEach(user => {
-        const userItem = document.createElement('div');
-        userItem.className = `user-item d-flex justify-content-between align-items-center p-2 border rounded mb-2 ${user.is_active ? 'bg-light' : 'text-muted'}`;
-        
-        userItem.innerHTML = `
+      filtered.forEach(u => {
+        const card = document.createElement('div');
+        card.className = `
+          flex items-center justify-between p-3 bg-white border rounded shadow-sm
+          ${u.is_active ? '' : 'opacity-50'}
+        `;
+        card.innerHTML = `
           <div>
-            <span>${user.name}</span>
-            <small class="d-block text-muted">${user.username}</small>
-            <small class="d-block">Last active: ${formatDate(user.last_login)}</small>
+            <div class="font-medium">${u.name}</div>
+            <div class="text-sm text-gray-500">@${u.username}</div>
+            <div class="text-xs text-gray-400">Poslední aktivita: ${formatDate(u.last_login)}</div>
           </div>
-          <button class="toggle-access btn btn-sm ${user.access_enabled ? 'btn-danger' : 'btn-success'}" 
-                  data-username="${user.username}">
-            ${user.access_enabled ? 'Disable Access' : 'Enable Access'}
+          <button 
+            class="flex items-center space-x-1 px-3 py-1 text-sm font-medium rounded 
+            ${u.access_enabled ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}"
+            data-username="${u.username}"
+            data-enable="${!u.access_enabled}"
+          >
+            <i data-feather="${u.access_enabled ? 'user-x' : 'user-check'}" class="w-4 h-4"></i>
+            <span>${u.access_enabled ? 'Zakázat' : 'Povolit'}</span>
           </button>
         `;
-        
-        container.appendChild(userItem);
+        container.append(card);
       });
-      
-      // Add event listeners to buttons
-      document.querySelectorAll('.toggle-access').forEach(button => {
-        button.addEventListener('click', async function() {
-          const username = this.dataset.username;
-          const enable = !this.classList.contains('btn-success');
-          
-          try {
-            const response = await fetch('/toggle-user-access', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-              },
-              body: JSON.stringify({ username, enable })
-            });
-            
-            if (!response.ok) throw new Error('Failed to update access');
-            
-            // Update local data and re-render
-            const user = currentUsers.find(u => u.username === username);
-            if (user) user.access_enabled = enable;
-            renderUsers(document.getElementById('search-bar').value);
-          } catch (error) {
-            console.error('Error toggling access:', error);
-            alert('Failed to update access');
-          }
+      feather.replace();
+      container.querySelectorAll('button[data-username]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const user = btn.dataset.username;
+          const enable = btn.dataset.enable === 'true';
+          await fetch('/toggle-user-access', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({ username: user, enable })
+          });
+          // Aktualizovat lokální stav
+          const u = currentUsers.find(x => x.username === user);
+          u.access_enabled = enable;
+          renderUsers(searchBar.value);
+          updateStats();
         });
       });
     }
 
-    // Update statistics cards
     function updateStats() {
-      const activeCount = currentUsers.filter(user => user.is_active).length;
-      document.getElementById('active-users-count').textContent = activeCount;
-      document.getElementById('total-users-count').textContent = currentUsers.length;
+      document.getElementById('active-users-count').textContent =
+        currentUsers.filter(u => u.is_active).length;
+      document.getElementById('total-users-count').textContent =
+        currentUsers.length;
     }
 
-    // Format date for display
-    function formatDate(isoString) {
-      if (!isoString) return 'Never';
-      const date = new Date(isoString);
-      return date.toLocaleString();
+    function formatDate(iso) {
+      if (!iso) return 'Nikdy';
+      return new Date(iso).toLocaleString('cs-CZ');
     }
 
-    // Initialize the dashboard
-    document.addEventListener('DOMContentLoaded', async () => {
-      // Load user info
-      const token = localStorage.getItem('token');
-      if (!token) {
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!localStorage.getItem('token')) {
         window.location.href = 'login.html';
         return;
       }
-      
-      try {
-        // Load classes and initial data
-        await loadClasses();
-        
-        // Set up search
-        document.getElementById('search-bar').addEventListener('input', (e) => {
-          renderUsers(e.target.value);
-        });
-      } catch (error) {
-        console.error('Initialization error:', error);
-      }
+      loadClasses();
+      searchBar.addEventListener('input', () => renderUsers(searchBar.value));
     });
   </script>
 </body>

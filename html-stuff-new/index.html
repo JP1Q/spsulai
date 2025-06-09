@@ -36,13 +36,16 @@
         <i data-feather="cpu" class="w-5 h-5 text-[#DCE2F0]"></i>
         <h1 class="text-xl font-bold">SPSUL AI</h1>
       </div>
-      <div class="mt-1 text-sm text-[#DCE2F0]/70">v1.1</div>
+      <div class="mt-1 text-sm text-[#DCE2F0]/70">v1.2</div>
     </div>
 
     <!-- Zobrazit jméno uživatele -->
-    <div id="user-info" class="mb-8 text-sm text-[#DCE2F0]">
+    <div id="user-info" class="mb-3 text-sm text-[#DCE2F0]">
       <i data-feather="user" class="w-4 h-4 inline-block mr-1"></i>
-      <span id="user-name">Načítání...</span>
+      <span id="full-name">Načítání...</span>
+    </div>
+    <div id="user-info" class="mb-8 text-sm text-[#DCE2F0]">
+      <span id="user-name">@dummydata</span>
     </div>
 
     <!-- Navigační tlačítka -->
@@ -50,7 +53,7 @@
       <!-- Chat tlačítko (vybrané výchozí) -->
       <button
         id="chat-btn"
-        class="nav-btn selected flex items-center gap-3 py-2 px-4 rounded-r-md shadow-md -mr-4 relative left-4 transition-transform duration-200"
+        class="nav-btn selected flex items-center gap-3 py-2 px-4 rounded-md transition-transform duration-200"
         title="Chat"
       >
         <i data-feather="message-circle" class="w-5 h-5"></i>
@@ -87,7 +90,7 @@
         <span>O projektu</span>
       </button>
     </nav>
-
+    <img src="mascot.png" alt="Maskot" class="w-54 h-54 mx-auto mt-4 mb-2">
     <!-- Odhlásit se ve spodní části -->
     <button
       id="logout-btn"
@@ -121,10 +124,12 @@
         return;
       }
       const auth = JSON.parse(raw);
-      const { full_name, is_teacher } = auth.user_info || {};
+      console.log(auth.user_info)
+      const { full_name, is_teacher, username, classroom } = auth.user_info || {};
 
       // Zobrazit jméno uživatele
-      document.getElementById('user-name').textContent = full_name || 'Neznámý uživatel';
+      document.getElementById('full-name').textContent = full_name + ", "+ classroom || 'Neznámý uživatel';
+      document.getElementById('user-name').textContent = "@" + username || 'Neznámý uživatel';
 
       // Zobrazit "Pro učitele" pouze pokud je is_teacher = true
       if (is_teacher) {

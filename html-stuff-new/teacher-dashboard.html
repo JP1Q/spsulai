@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Učitelský Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+  <style>
+    body {
+      background: transparent;
+      margin: 0;
+      color: #DCE2F0;
+      font-family: system-ui, sans-serif;
+      min-height: 100vh;
+    }
+    
+    /* Container */
+    .container {
+      max-width: 1024px;
+      margin: 2rem auto;
+      padding: 1.5rem;
+    }
+    
+    /* Card style with smooth animations */
+    .card {
+      background-color: rgba(220, 226, 240, 0.1);
+      border: 1px solid rgba(220, 226, 240, 0.2);
+      backdrop-filter: blur(10px);
+      border-radius: 0.75rem;
+      transition: all 0.3s ease;
+    }
+    
+    .card:hover {
+      background-color: rgba(220, 226, 240, 0.15);
+      border-color: rgba(220, 226, 240, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(220, 226, 240, 0.1);
+    }
+    
+    /* Buttons with animations */
+    button {
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 0.5rem;
+      font-weight: 600;
+    }
+    
+    /* Enable button */
+    .btn-enable {
+      background: linear-gradient(135deg, #DCE2F0 0%, rgba(220, 226, 240, 0.8) 100%);
+      color: #50586C;
+      border: 1px solid rgba(220, 226, 240, 0.3);
+    }
+    
+    .btn-enable:hover {
+      background: #DCE2F0;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(220, 226, 240, 0.2);
+    }
+    
+    .btn-enable:active {
+      transform: translateY(0);
+    }
+    
+    /* Disable button */
+    .btn-disable {
+      background: rgba(220, 226, 240, 0.1);
+      color: #DCE2F0;
+      border: 1px solid rgba(220, 226, 240, 0.3);
+    }
+    
+    .btn-disable:hover {
+      background: rgba(220, 226, 240, 0.2);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(220, 226, 240, 0.1);
+    }
+    
+    .btn-disable:active {
+      transform: translateY(0);
+    }
+    
+    /* Logout button */
+    .btn-logout {
+      background: rgba(220, 226, 240, 0.1);
+      color: #DCE2F0;
+      border: 1px solid rgba(220, 226, 240, 0.2);
+    }
+    
+    .btn-logout:hover {
+      background: rgba(220, 226, 240, 0.2);
+      transform: translateY(-1px);
+    }
+    
+    /* Inputs and selects */
+    input, select {
+      background-color: rgba(220, 226, 240, 0.1);
+      border: 1px solid rgba(220, 226, 240, 0.2);
+      color: #DCE2F0;
+      border-radius: 0.5rem;
+      padding: 0.75rem 1rem;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+    
+    input::placeholder {
+      color: rgba(220, 226, 240, 0.5);
+    }
+    
+    input:focus, select:focus {
+      outline: none;
+      border-color: rgba(220, 226, 240, 0.5);
+      background-color: rgba(220, 226, 240, 0.15);
+      box-shadow: 0 0 0 3px rgba(220, 226, 240, 0.1);
+      transform: translateY(-1px);
+    }
+    
+    /* Search container */
+    .search-container {
+      position: relative;
+    }
+    
+    .search-icon {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      opacity: 0.6;
+      transition: opacity 0.3s ease;
+    }
+    
+    .search-container:focus-within .search-icon {
+      opacity: 1;
+    }
+    
+    /* Icon styling */
+    .feather {
+      stroke: #DCE2F0;
+    }
+    
+    /* Student cards with enhanced animations */
+    .student-card {
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      border-left: 3px solid transparent;
+    }
+    
+    .student-card:hover {
+      border-left-color: #DCE2F0;
+      padding-left: 1rem;
+    }
+    
+    .student-card.inactive {
+      opacity: 0.5;
+      filter: grayscale(0.3);
+    }
+    
+    .student-card.inactive:hover {
+      opacity: 0.8;
+      filter: grayscale(0.1);
+    }
+    
+    /* Stats animation */
+    .stat-number {
+      transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover .stat-number {
+      transform: scale(1.1);
+    }
+    
+    /* Scroll styling */
+    #users-container {
+      max-height: 500px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(220, 226, 240, 0.3) transparent;
+    }
+    
+    #users-container::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    #users-container::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    
+    #users-container::-webkit-scrollbar-thumb {
+      background: rgba(220, 226, 240, 0.3);
+      border-radius: 3px;
+    }
+    
+    #users-container::-webkit-scrollbar-thumb:hover {
+      background: rgba(220, 226, 240, 0.5);
+    }
+    
+    /* Loading animation */
+    .loading {
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    /* Fade in animation */
+    .fade-in {
+      animation: fadeIn 0.5s ease-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Status indicators */
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 8px;
+      transition: all 0.3s ease;
+    }
+    
+    .status-active {
+      background-color: #DCE2F0;
+      box-shadow: 0 0 8px rgba(220, 226, 240, 0.5);
+    }
+    
+    .status-inactive {
+      background-color: rgba(220, 226, 240, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <div class="container space-y-6 fade-in">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <i data-feather="users" class="w-8 h-8"></i>
+        <h1 class="text-3xl font-bold">Učitelský Dashboard</h1>
+      </div>
+      <button id="toggle-class" class="flex items-center space-x-2 btn-logout px-4 py-2 rounded-lg text-sm font-semibold">
+        <i data-feather="chevron-down" class="w-5 h-5"></i>
+        <span>Přepnout přístup</span>
+      </button>
+    </div>
+
+    <!-- Class selector and search -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="md:col-span-2 flex items-center gap-2">
+        <i data-feather="bookmark" class="w-5 h-5 opacity-70"></i>
+        <select id="class-selector" class="flex-1"></select>
+      </div>
+      <div class="search-container">
+        <input 
+          type="text" 
+          id="search-bar" 
+          placeholder="Vyhledat studenta…" 
+          class="w-full pr-10"
+        />
+        <i data-feather="search" class="search-icon w-5 h-5"></i>
+      </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="card stat-card flex items-center space-x-4 p-6">
+        <div class="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-[#DCE2F0] to-rgba(220, 226, 240, 0.7)">
+          <i data-feather="user-check" class="w-6 h-6 text-[#50586C]"></i>
+        </div>
+        <div>
+          <div class="text-2xl font-bold stat-number" id="active-users-count">0</div>
+          <div class="text-sm opacity-70">Aktivní studenti</div>
+        </div>
+      </div>
+      <div class="card stat-card flex items-center space-x-4 p-6">
+        <div class="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-[#DCE2F0] to-rgba(220, 226, 240, 0.7)">
+          <i data-feather="users" class="w-6 h-6 text-[#50586C]"></i>
+        </div>
+        <div>
+          <div class="text-2xl font-bold stat-number" id="total-users-count">0</div>
+          <div class="text-sm opacity-70">Celkový počet studentů</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Students list -->
+    <div>
+      <div class="flex items-center gap-3 mb-4">
+        <i data-feather="list" class="w-6 h-6"></i>
+        <h2 class="text-2xl font-semibold">Seznam studentů</h2>
+      </div>
+      <div id="users-container" class="space-y-3"></div>
+    </div>
+  </div>
+
+<script>
+  feather.replace();
+
+  let currentClassroom = null;
+  let auth;
+  try {
+    auth = JSON.parse(localStorage.getItem('spsulAI_auth') || '{}');
+    if (!auth?.user_info?.is_teacher) {
+      window.top.location.href = 'login.html';
+    }
+  } catch (e) {
+    window.top.location.href = 'login.html';
+  }
+
+  // button with id toggle-class toggless access with endpoint /toggle-classroom-access
+  document.getElementById('toggle-class').addEventListener('click', async () => {
+  const classroom = currentClassroom; // Replace with actual classroom value
+  const btn_raw = document.getElementById('toggle-class');
+  const btn = btn_raw.querySelector('span');
+  btn.disabled = true;
+  btn.innerText = 'Zpracovávám...';
+
+  try {
+    const res = await fetch(`https://ai.spsul.cz/api/toggle-classroom-access?classroom=${encodeURIComponent(classroom)}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${auth.access_token}`
+      }
+    });
+
+    if (!res.ok) throw new Error('Nelze přepnout přístup');
+
+    const data = await res.json();
+
+
+    // Re-render students
+    await renderUsers(); // define this function to re-call renderUsers
+  } catch (e) {
+    alert(e.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerText = 'Přepnout přístup';
+  }
+});
+
+
+
+  const selector = document.getElementById('class-selector');
+  const searchBar = document.getElementById('search-bar');
+  let currentUsers = [];
+
+  async function loadClasses() {
+    const res = await fetch('https://ai.spsul.cz/api/teacher-classes', {
+      headers: { 'Authorization': `Bearer ${auth.access_token}` }
+    });
+    const data = await res.json();
+    selector.innerHTML = data.classes.map(c =>
+      `<option value="${c.name}">${c.name}</option>`
+    ).join('');
+    selector.addEventListener('change', () => loadUsers(selector.value));
+    if (data.classes.length) {
+      selector.value = data.classes[0].name;
+      loadUsers(selector.value);
+    }
+  }
+
+  async function loadUsers(className) {
+    currentClassroom = className; // Store the current classroom
+    const container = document.getElementById('users-container');
+    container.innerHTML = '<div class="text-center py-8 loading"><i data-feather="loader" class="w-6 h-6 mx-auto"></i><div class="mt-2">Načítání studentů...</div></div>';
+    feather.replace();
+    
+    const res = await fetch(`https://ai.spsul.cz/api/class-users/${className}`, {
+      headers: { 'Authorization': `Bearer ${auth.access_token}` }
+    });
+    const data = await res.json();
+    currentUsers = data.users;
+    renderUsers();
+    updateStats();
+  }
+
+  async function renderUsers(filter = '') {
+    const container = document.getElementById('users-container');
+    container.innerHTML = '';
+    const filtered = currentUsers.filter(u =>
+      u.name.toLowerCase().includes(filter.toLowerCase()) ||
+      u.username.toLowerCase().includes(filter.toLowerCase())
+    );
+    
+    if (!filtered.length) {
+      container.innerHTML = `
+        <div class="text-center py-12 opacity-70">
+          <i data-feather="user-x" class="w-12 h-12 mx-auto mb-3"></i>
+          <div class="text-lg">Žádní studenti</div>
+          <div class="text-sm mt-1">Zkuste změnit vyhledávací kritéria</div>
+        </div>
+      `;
+      feather.replace();
+      return;
+    }
+    
+    for (const [index, u] of filtered.entries()) {
+      const card = document.createElement('div');
+      card.className = `card student-card flex items-center justify-between p-4 ${u.access_enabled ? '' : 'inactive'}`;
+      card.style.animationDelay = `${index * 0.1}s`;
+      const access = await getAccess(u.username);
+      u.access_enabled = access;
+      
+      card.innerHTML = `
+        <div class="flex items-center gap-4">
+          <div class="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-[#DCE2F0] to-rgba(220, 226, 240, 0.7)">
+            <i data-feather="user" class="w-5 h-5 text-[#50586C]"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="status-dot ${u.access_enabled ? 'status-active' : 'status-inactive'}"></span>
+              <div class="font-semibold text-lg">${u.name}</div>
+            </div>
+            <div class="text-sm opacity-70 flex items-center gap-2 mt-1">
+              <i data-feather="at-sign" class="w-3 h-3"></i>
+              <span>${u.username}</span>
+            </div>
+            <div class="text-xs opacity-60 flex items-center gap-2 mt-1">
+              <i data-feather="clock" class="w-3 h-3"></i>
+              <span>Poslední aktivita: ${formatDate(u.last_login)}</span>
+            </div>
+          </div>
+        </div>
+        <button
+          class="flex items-center space-x-2 px-4 py-2 text-sm font-semibold rounded-lg
+          ${u.access_enabled ? 'btn-disable' : 'btn-enable'}"
+          data-username="${u.username}"
+        >
+          <i data-feather="${u.access_enabled ? 'user-x' : 'user-check'}" class="w-4 h-4"></i>
+          <span>${u.access_enabled ? 'Zakázat' : 'Povolit'}</span>
+        </button>
+      `;
+      
+      card.classList.add('fade-in');
+      container.append(card);
+    };
+    
+    feather.replace();
+
+    // Updated toggle handler
+    container.querySelectorAll('button[data-username]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const username = btn.getAttribute('data-username');
+        
+        btn.disabled = true;
+        btn.innerHTML = '<i data-feather="loader" class="w-4 h-4 animate-spin"></i>';
+        feather.replace();
+        
+        try {
+          console.log(`Toggling access for user: ${username} with token: ${auth.access_token}`);
+          // Pass username as query param to match your endpoint signature
+          const resp = await fetch(`https://ai.spsul.cz/api/set-user-access?username=${encodeURIComponent(username)}`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${auth.access_token}`,
+            },
+          });
+          
+          if (!resp.ok) {
+            throw new Error(`HTTP ${resp.status}`);
+          }
+          
+          // your endpoint returns {"username": "...", "old_access": x, "new_access": y}
+          const { new_access } = await resp.json();
+          const user = currentUsers.find(u => u.username === username);
+          if (user) user.access_enabled = new_access;
+          
+          renderUsers(searchBar.value);
+          updateStats();
+        } catch (err) {
+          console.error(err);
+          alert('Chyba při změně přístupu');
+        } finally {
+          btn.disabled = false;
+        }
+      });
+    });
+  }
+
+
+  async function getAccess(username) {
+    const resp = await fetch(`https://ai.spsul.cz/api/get-user-access?username=${encodeURIComponent(username)}`, {
+      headers: {
+        Authorization: `Bearer ${auth.access_token}`
+      }
+    });
+
+    if (!resp.ok) throw new Error("Access fetch failed");
+
+    const data = await resp.json();
+    return data.has_access;
+  }
+
+  function updateStats() {
+    const activeCount = currentUsers.filter(u => u.access_enabled).length;
+    const totalCount = currentUsers.length;
+    
+    document.getElementById('active-users-count').textContent = activeCount;
+    document.getElementById('total-users-count').textContent = totalCount;
+  }
+
+  function formatDate(dateStr) {
+    if (!dateStr) return 'nikdy';
+    const d = new Date(dateStr);
+    return d.toLocaleString('cs-CZ', { dateStyle: 'short', timeStyle: 'short' });
+  }
+
+  searchBar.addEventListener('input', () => {
+    renderUsers(searchBar.value);
+  });
+
+  loadClasses();
+</script>
+
+</body>
+</html>

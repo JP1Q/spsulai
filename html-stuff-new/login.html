@@ -111,7 +111,7 @@
         } else {
           const errorData = await response.json();
           console.error('Chyba:', errorData);
-          errorEl.textContent = errorData.detail?.[0]?.msg || 'Neznámá chyba';
+          errorEl.textContent = errorData.detail;
           errorEl.classList.remove('hidden');
         }
       } catch (err) {
